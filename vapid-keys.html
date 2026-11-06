@@ -1,0 +1,16 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VAPID-ключи для Niet Café</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:30px auto;padding:0 16px;color:#27402b}button{background:#4f7f4a;color:#fff;border:0;border-radius:12px;padding:12px 22px;font-size:16px;cursor:pointer}
+textarea{width:100%;font:13px monospace;padding:8px;border:1px solid #cfdcc7;border-radius:10px;word-break:break-all}.b{background:#fff6f5;border:1px solid #c0504a;border-radius:10px;padding:10px 14px}</style></head><body>
+<h2>🔑 Генератор VAPID-ключей</h2>
+<p>Ключи создаются прямо в вашем браузере и никуда не отправляются. Страница работает без интернета.</p>
+<button onclick="gen()">Создать ключи</button>
+<div id="o" style="display:none">
+<h4>1. Публичный ключ → вставить в index.html (<code>const VAPID='…'</code>) и в секрет <code>VAPID_PUBLIC</code></h4><textarea id="pub" rows="3" readonly onclick="this.select()"></textarea>
+<h4>2. Приватный ключ → только в секрет <code>VAPID_PRIVATE</code></h4><textarea id="prv" rows="2" readonly onclick="this.select()"></textarea>
+<p class="b">⚠️ Приватный ключ никому не показывайте и не вставляйте в index.html. Если создадите ключи заново, все устройства придётся подписать заново.</p></div>
+<script>
+const u=b=>btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),d=s=>Uint8Array.from(atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+async function gen(){const k=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']),j=await crypto.subtle.exportKey('jwk',k.privateKey),x=d(j.x),y=d(j.y),p=new Uint8Array(65);p[0]=4;p.set(x,1);p.set(y,33);
+$('pub').value=u(p);$('prv').value=j.d;$('o').style.display='block'}
+const $=i=>document.getElementById(i);
+</script></body></html>

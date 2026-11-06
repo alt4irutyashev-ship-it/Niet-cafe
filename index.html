@@ -49,12 +49,12 @@ const hd=()=>`<header><span class="brand">🌿 Niet Café</span><span class="who
 const tabs=(a,d)=>{tab=tab||d;return`<div class="row tb">${a.map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';render()">${n}</button>`).join('')}</div>`};
 function login(){$('#app').innerHTML=`<div class="lg card"><div style="font-size:44px">🌿</div><h2 style="margin:0">Niet Café</h2><small style="color:var(--mu)">Заказы и учёт</small><input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username"><input id="p" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">Войти</button><p id="er" class="bad"></p></div>`}
 async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase().split('@')[0]+'@niet.cafe',password:pp($('#p').value)});if(error)return $('#er').textContent=(/invalid login/i.test(error.message)?'Неверный логин или пароль':'Ошибка: '+error.message);init()}
-async function out(){await sb.auth.signOut();me=null;NA=[];drawN();if(ch){sb.removeChannel(ch);ch=null}login()}
+async function out(){try{await pushOff()}catch(e){}await sb.auth.signOut();me=null;NA=[];drawN();if(ch){sb.removeChannel(ch);ch=null}login()}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(!session)return login();
 const{data}=await sb.from('profiles').select('*').eq('id',session.user.id).single();me=data;tab='';tbl=0;
 if(!me||!['waiter','kitchen','bar','boss'].includes(me.role)){$('#app').innerHTML=(me?hd():'<header><span class="brand">🌿 Niet Café</span><span class="who"></span><button class="btn o s" onclick="out()">Выйти</button></header>')+'<main><p>Роль не назначена или профиль не найден. Обратитесь к руководителю.</p></main>';return}
 [C,D]=await Promise.all([q(sb.from('cats').select('*').order('id')),q(sb.from('dishes').select('*').order('id'))]);cat=C[0]?C[0].id:0;
-NA=[];CUR=null;CARTS={};await ldst();sub();render();wl()}
+NA=[];CUR=null;CARTS={};await ldst();sub();render();wl();pushAuto()}
 let RV=0;async function render(){if(!me)return;const n=++RV,h={waiter:wv,kitchen:()=>kv('kitchen'),bar:()=>kv('bar'),boss:bv}[me.role],x=await h();if(n!=RV||!me)return;const a=document.activeElement,id=a&&a.id,p=a&&a.selectionStart,y=scrollY;$('#app').innerHTML=hd()+'<main>'+x+'</main>';scrollTo(0,y);const b=id&&document.getElementById(id);if(b&&b.focus){b.focus();try{b.setSelectionRange(p,p)}catch(e){}}}
 /* ---- отделы, статусы, имена ---- */
 const STN={kitchen:['Кухня','🍳'],bar:['Бар','🍹']},isS=r=>!!STN[r],SL={new:'новый',accepted:'принято',cooking:'принято',ready:'готово',served:'выдано'},SC=s=>s=='cooking'?'accepted':s,schip=s=>`<span class="sc ${SC(s)}">${SL[s]||s}</span>`;
@@ -425,11 +425,11 @@ function play(k){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)(
 const VIB=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}},
 say=t=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';u.volume=1;setTimeout(()=>speechSynthesis.speak(u),1700)}catch(e){}};
 function unlock(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume().then(()=>{AU=AC.state=='running';if(AU){const b=$('#ub');b&&b.remove()}})}catch(e){}
-try{if(me&&me.role!='boss'&&window.Notification&&Notification.permission=='default')Notification.requestPermission()}catch(e){}wl()}
+try{if(me&&me.role!='boss'&&window.Notification&&Notification.permission=='default')Notification.requestPermission().then(()=>pushOn(false))}catch(e){}wl()}
 document.addEventListener('pointerdown',()=>{if(!AU)unlock()},{passive:true});
 async function wl(){try{if(navigator.wakeLock&&!WL&&me&&me.role!='boss'&&!document.hidden){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>WL=null)}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){wl();me&&rr()}});addEventListener('online',()=>me&&rr());
-function sys(a){if(!document.hidden||!window.Notification||Notification.permission!='granted')return;const t=a.pt||'Niet Café',o={body:a.pb||'',tag:a.id,renotify:true,requireInteraction:true,vibrate:[400,150,400],icon:'icon-192.png'};
+function sys(a){if(PUSHON||!document.hidden||!window.Notification||Notification.permission!='granted')return;const t=a.pt||'Niet Café',o={body:a.pb||'',tag:a.id,renotify:true,requireInteraction:true,vibrate:[400,150,400],icon:'icon-192.png'};
 (navigator.serviceWorker?navigator.serviceWorker.getRegistration():Promise.resolve()).then(r=>r?r.showNotification(t,o):new Notification(t,o)).catch(()=>{})}
 function nfy(a){NA=NA.filter(x=>x.id!=a.id);NA.push({...a,t:Date.now()});drawN();play(a.kind);VIB(a.ring?[500,200,500,200,900]:[250]);if(a.say)say(a.say);sys(a);if(a.auto)setTimeout(()=>dis(a.id),a.auto);ringOn()}
 const dis=id=>{NA=NA.filter(a=>a.id!=id);drawN()};
@@ -437,7 +437,7 @@ function drawN(){const e=$('#nt');if(!e)return;e.innerHTML=NA.map(a=>`<div class
 /* звонок повторяется, пока заказ не принят (новый) или 45 сек (готово) */
 function ringOn(){if(RT)return;RT=setInterval(()=>{const r=NA.filter(x=>x.ring&&(!x.max||Date.now()-x.t<x.max));if(!r.length){clearInterval(RT);RT=null;return}play(r.some(x=>x.kind=='new')?'new':r[0].kind);VIB([400,150,400])},4500)}
 function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),2600)}
-function tst(){unlock();['new','ready','accepted'].forEach((k,i)=>setTimeout(()=>play(k),i*2300));toast('Звуки: новый заказ → готово → принято')}
+function tst(){unlock();['new','ready','accepted'].forEach((k,i)=>setTimeout(()=>play(k),i*2300));toast('Звуки: новый заказ → готово → принято');setTimeout(()=>pushOn(true),1500)}
 /* официант: уведомления «принято» и «готово» по своим заказам (пачкой за 0,7 сек, чтобы не звенело на каждую позицию) */
 function wq(n){const st=SC(n.status),k=(n.batch||n.order_id)+'|'+n.station+'|'+st,e=WQ[k]||(WQ[k]={st,s:n.station,l:n.label||'Заказ',ids:[],t:[]});e.ids.push(n.id);e.t.push(n.qty+'× '+dn(n.dish_id));clearTimeout(WT);WT=setTimeout(wfl,700)}
 function wfl(){const Q=WQ;WQ={};Object.values(Q).forEach(e=>{const sn=(STN[e.s]||[''])[0],id='w'+(++WID),txt=e.t.join(', ');
@@ -459,6 +459,28 @@ function pr(){const g={};PQ.splice(0).forEach(i=>{const k=i.batch||i.order_id;(g
 $('#pt').innerHTML=Object.values(g).map(a=>`<div style="page-break-after:always"><h2 style="margin:0">${E((STN[me.role]||[''])[0].toUpperCase())}</h2><div style="font-size:20px"><b>${E(a[0].label||('Стол '+a[0].tbl))}</b> · ${h}</div><div>Официант: ${E(wn(a[0].waiter))}</div><hr>${a.map(i=>`<div style="font-size:18px"><b>${i.qty} ×</b> ${E(dn(i.dish_id))}</div>`).join('')}<hr></div>`).join('');
 document.body.classList.add('pk');print();document.body.classList.remove('pk')}
 const rpt=k=>{const x=KT[k];if(x){PQ=[...x.items];pr()}};
+/* ---- Web Push: уведомления при закрытом приложении ---- */
+const VAPID='';/* публичный VAPID-ключ: создайте в vapid-keys.html и вставьте сюда */
+let PUSHON=false;
+const b64u=s=>{const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))},
+pushRole=()=>me&&['waiter','kitchen','bar'].includes(me.role),
+pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&window.Notification&&location.protocol.startsWith('http');
+async function pushOn(v){const t=m=>{if(v)toast(m)};
+ try{
+  if(!pushRole())return;
+  if(!VAPID)return t('Push не настроен: не указан VAPID-ключ в index.html');
+  if(!pushOk())return t('Этот браузер не поддерживает push. На iPhone: «Поделиться» → «На экран Домой», затем открыть иконку');
+  if(Notification.permission=='default')await Notification.requestPermission();
+  if(Notification.permission!='granted')return t('Уведомления запрещены — разрешите их для этого сайта в настройках браузера');
+  const reg=await navigator.serviceWorker.ready,key=b64u(VAPID);let s=await reg.pushManager.getSubscription();
+  if(s){const k=s.options&&s.options.applicationServerKey;if(k&&(k.byteLength!=key.length||!new Uint8Array(k).every((x,i)=>x==key[i]))){await s.unsubscribe();s=null}}
+  if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+  const j=s.toJSON(),r=await sb.rpc('push_register',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_ua:navigator.userAgent.slice(0,200)});
+  if(r.error){PUSHON=false;return t('Push: выполните 7_push.sql в Supabase ('+r.error.message+')')}
+  PUSHON=true;t('✅ Push включён — уведомления придут и при закрытом приложении')
+ }catch(e){PUSHON=false;t('Не удалось включить push: '+(e.message||e))}}
+function pushAuto(){if(pushRole()&&pushOk()&&Notification.permission=='granted')pushOn(false)}
+async function pushOff(){PUSHON=false;if(!pushOk())return;const r=await navigator.serviceWorker.getRegistration(),s=r&&await r.pushManager.getSubscription();if(s)await sb.rpc('push_unregister',{p_endpoint:s.endpoint})}
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 sb.auth.onAuthStateChange(e=>{if(e=='SIGNED_OUT'&&me){me=null;login()}});
 init();
