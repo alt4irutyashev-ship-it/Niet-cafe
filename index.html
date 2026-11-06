@@ -1,10 +1,10 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Niet Café</title><meta name="description" content="Niet Café — заказы и учёт"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>"><meta name="theme-color" content="#5f8553"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><meta name="mobile-web-app-capable" content="yes">
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Niet Café</title><meta name="description" content="Niet Café — заказы и учёт"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>"><meta name="theme-color" content="#5f8553"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Niet Café"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no">
 <style>
 :root{--bg:#f4f7ef;--tx:#27402b;--mu:#7a8f75;--g:#4f7f4a;--au:#c79a3b;--ln:#e1eadb;--rd:#c0504a;color-scheme:light}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}button,.dh,.tbl{touch-action:manipulation}button:focus-visible,.dh:focus-visible{outline:2px solid var(--au);outline-offset:2px}
 body{margin:0;background:linear-gradient(180deg,#e6f0db,#f7f9f3 260px) fixed;color:var(--tx);font:15px/1.4 "Segoe UI",system-ui,sans-serif}button,input,select{font:inherit;color:inherit}
-header{display:flex;align-items:center;gap:10px;padding:12px 18px;background:linear-gradient(135deg,#4f7f4a,#6c9a5f);color:#fff;position:sticky;top:0;z-index:5;box-shadow:0 2px 14px #2f4a2a33}.brand{font-weight:800;font-size:18px}.who{flex:1;text-align:right;font-size:13px;opacity:.92}
+header{display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) 12px calc(18px + env(safe-area-inset-left));background:linear-gradient(135deg,#4f7f4a,#6c9a5f);color:#fff;position:sticky;top:0;z-index:5;box-shadow:0 2px 14px #2f4a2a33}.brand{font-weight:800;font-size:18px}.who{flex:1;text-align:right;font-size:13px;opacity:.92}
 header .btn.o{background:#ffffff26;color:#fff;border:1px solid #ffffff66}
-main{max-width:1180px;margin:auto;padding:16px}
+main{max-width:1180px;margin:auto;padding:16px calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}html{-webkit-text-size-adjust:100%}body{overscroll-behavior-y:contain}
 .btn,.chip{border:1px solid var(--ln);background:#fff;border-radius:12px;padding:9px 16px;cursor:pointer;transition:.15s}.btn{background:linear-gradient(135deg,#4f7f4a,#6c9a5f);color:#fff;border:0;font-weight:700;box-shadow:0 2px 6px #4f7f4a44}.btn:active{transform:scale(.97)}.btn.o{background:#fff;color:var(--g);border:1px solid var(--g);box-shadow:none}.btn.r{background:var(--rd);box-shadow:none}.btn.s{padding:5px 11px;font-size:13px}
 .on{background:var(--g)!important;color:#fff!important;border-color:var(--g)!important}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
 .tb{background:#fff;padding:5px;border-radius:14px;box-shadow:0 2px 10px #2f4a2a14;overflow-x:auto;flex-wrap:nowrap}.tb button{border:0;background:transparent;border-radius:10px;padding:8px 14px;white-space:nowrap;cursor:pointer}
@@ -24,19 +24,21 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;fon
 .dh .dn{color:inherit;font-weight:400;flex:1}.tbl .tc{margin-top:5px;display:flex;gap:3px;justify-content:center;flex-wrap:wrap}.tbl .ow{color:var(--mu)}.tbl small.ow{font-weight:500}
 .tbl.rdy{box-shadow:0 0 0 3px #40c057;animation:pl 1.2s infinite}@keyframes pl{50%{box-shadow:0 0 0 8px #40c05744}}
 .btn.big{font-size:17px;padding:14px 24px}.btn:disabled{opacity:.5}.tk.done{border-left-color:#adb5bd;opacity:.85}
-#nt{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;flex-direction:column;gap:8px;padding:8px;pointer-events:none;max-height:100vh;overflow:auto}
+#nt{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;flex-direction:column;gap:8px;padding:8px;pointer-events:none;max-height:100vh;overflow:auto;padding-top:calc(8px + env(safe-area-inset-top))}
 .nt{pointer-events:auto;margin:0 auto;width:100%;max-width:560px;border-radius:16px;padding:14px 16px;color:#fff;box-shadow:0 8px 30px #0007}.nt .nh{font-size:21px;font-weight:800}.nt .nb{font-size:18px;margin:6px 0 10px;line-height:1.5}
 .nt.new{background:#e8590c;animation:sh .7s infinite}.nt.ready{background:#2b8a3e;animation:sh .9s infinite}.nt.accepted{background:#1c7ed6}.nt.cancel{background:#c92a2a}@keyframes sh{50%{box-shadow:0 0 0 7px #ffd43bcc,0 8px 30px #0007}}
 .nt .btn{background:#fff;color:#27402b;font-size:17px;padding:12px 22px;box-shadow:none}.nt .btn.o{background:#ffffff33;color:#fff;border:1px solid #fff}
-.ub{background:#fff3bf;color:#7c5a00;padding:14px 16px;text-align:center;font-weight:700;cursor:pointer;position:fixed;left:0;right:0;bottom:0;z-index:40;box-shadow:0 -3px 14px #0003}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#27402b;color:#fff;padding:11px 20px;border-radius:12px;z-index:60;box-shadow:0 4px 16px #0004}
+.ub{background:#fff3bf;color:#7c5a00;padding:14px 16px calc(14px + env(safe-area-inset-bottom));text-align:center;font-weight:700;cursor:pointer;position:fixed;left:0;right:0;bottom:0;z-index:40;box-shadow:0 -3px 14px #0003}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#27402b;color:#fff;padding:11px 20px;border-radius:12px;z-index:60;box-shadow:0 4px 16px #0004}
 .oh{display:flex;gap:12px;align-items:center;cursor:pointer;flex-wrap:wrap}.oh .ot{font-size:18px;min-width:52px;font-variant-numeric:tabular-nums}.oh .om{flex:1;min-width:150px}.oh .os{text-align:right;min-width:90px}.oc.tk{padding:12px 14px}.od{margin-top:8px;border-top:1px solid var(--ln);padding-top:6px}
-.dy{position:sticky;top:54px;z-index:4;background:#eef4e7;border-radius:10px;padding:8px 12px;margin:14px 0 4px;font-weight:700;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 2px 6px #2f4a2a14}
+.dy{position:sticky;top:calc(54px + env(safe-area-inset-top));z-index:4;background:#eef4e7;border-radius:10px;padding:8px 12px;margin:14px 0 4px;font-weight:700;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 2px 6px #2f4a2a14}
 .tlv{border-left:2px solid var(--ln);margin:8px 0 8px 8px;padding-left:12px}.te{display:flex;gap:8px;padding:5px 0;align-items:flex-start}.te .tt{font-variant-numeric:tabular-nums;color:var(--mu);font-size:13px;min-width:62px;padding-top:1px}.te .dl{color:#9a6b1c;font-weight:700}
 .of{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.of label{display:grid;gap:3px;font-size:12px;color:var(--mu)}.of select,.of input{width:100%;color:var(--tx)}
+.ib{display:flex;align-items:center;gap:8px;background:#fff3bf;color:#6b4f00;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;box-shadow:0 2px 10px #2f4a2a14}.ib .btn{flex:none}
+.sheet ol{padding-left:20px;margin:8px 0}.sheet li{margin:6px 0}.sheet details{background:#fff;border-radius:12px;padding:8px 12px;margin:8px 0}.sheet summary{cursor:pointer}
 </style></head><body><div id="app"></div><div id="md"></div><div id="pt"></div><div id="nt"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script>var VAPID_KEY='BALS36XRObXtRb4Y4q8hmHBCTRfju6ObsFTKYJ33SziEE1-gBRc69QeoxQWBdEHRB5ynmQ_3iacL4Z7BkHozPJY';/* ПУБЛИЧНЫЙ ключ push из vapid-keys.html — вставьте МЕЖДУ кавычками, ничего больше не трогайте. Приватный ключ сюда НЕЛЬЗЯ. */</script>
+<script>var VAPID_KEY='';/* ПУБЛИЧНЫЙ ключ push из vapid-keys.html — вставьте МЕЖДУ кавычками, ничего больше не трогайте. Приватный ключ сюда НЕЛЬЗЯ. */</script>
 <script>
 /* ВСТАВЬТЕ СВОИ ДАННЫЕ из Supabase: Project Settings -> API (Project URL и anon public key) */
 const URL_='https://iamomamsltqfpeljahuy.supabase.co',KEY='sb_publishable_4l_mW-_FDstSX2IhEtjvSQ_kf0rr55J';
@@ -46,9 +48,9 @@ const RN={waiter:'Официант',kitchen:'Кухня',bar:'Бар',boss:'Ру
 let me=null,tab='',tbl=0,cat=0,per=1,D=[],C=[],ch=null;
 const q=async p=>{const r=await p;if(r.error){alert(r.error.message);throw r.error}return r.data};
 const dp=id=>+(D.find(d=>d.id==id)||{}).price||0,dn=id=>(D.find(d=>d.id==id)||{}).name||'';
-const hd=()=>`<header><span class="brand">🌿 Niet Café</span><span class="who">${RN[me.role]||'Без роли'} · ${E(me.name||me.login||'без имени')}</span>${me.role!='boss'?'<button class="btn o s" onclick="tst()" title="Проверить звук">🔔</button>':''}<button class="btn o s" onclick="out()">Выйти</button></header>${NB()}`;
+const hd=()=>`<header><span class="brand">🌿 Niet Café</span><span class="who">${RN[me.role]||'Без роли'} · ${E(me.name||me.login||'без имени')}</span>${me.role!='boss'?'<button class="btn o s" onclick="tst()" title="Проверить звук">🔔</button>':''}${isStd()?'':'<button class="btn o s" onclick="inst()" title="Установить как приложение">📲</button>'}<button class="btn o s" onclick="out()">Выйти</button></header>${NB()}${IB()}`;
 const tabs=(a,d)=>{tab=tab||d;return`<div class="row tb">${a.map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';render()">${n}</button>`).join('')}</div>`};
-function login(){$('#app').innerHTML=`<div class="lg card"><div style="font-size:44px">🌿</div><h2 style="margin:0">Niet Café</h2><small style="color:var(--mu)">Заказы и учёт</small><input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username"><input id="p" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">Войти</button><p id="er" class="bad"></p></div>`}
+function login(){$('#app').innerHTML=`<div class="lg card"><div style="font-size:44px">🌿</div><h2 style="margin:0">Niet Café</h2><small style="color:var(--mu)">Заказы и учёт</small><input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username"><input id="p" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">Войти</button><p id="er" class="bad"></p>${isStd()?'':'<button class="btn o s" onclick="inst()">📲 Установить как приложение</button>'}</div>`}
 async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase().split('@')[0]+'@niet.cafe',password:pp($('#p').value)});if(error)return $('#er').textContent=(/invalid login/i.test(error.message)?'Неверный логин или пароль':'Ошибка: '+error.message);init()}
 async function out(){try{await pushOff()}catch(e){}await sb.auth.signOut();me=null;NA=[];drawN();if(ch){sb.removeChannel(ch);ch=null}login()}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(!session)return login();
@@ -460,6 +462,25 @@ function pr(){const g={};PQ.splice(0).forEach(i=>{const k=i.batch||i.order_id;(g
 $('#pt').innerHTML=Object.values(g).map(a=>`<div style="page-break-after:always"><h2 style="margin:0">${E((STN[me.role]||[''])[0].toUpperCase())}</h2><div style="font-size:20px"><b>${E(a[0].label||('Стол '+a[0].tbl))}</b> · ${h}</div><div>Официант: ${E(wn(a[0].waiter))}</div><hr>${a.map(i=>`<div style="font-size:18px"><b>${i.qty} ×</b> ${E(dn(i.dish_id))}</div>`).join('')}<hr></div>`).join('');
 document.body.classList.add('pk');print();document.body.classList.remove('pk')}
 const rpt=k=>{const x=KT[k];if(x){PQ=[...x.items];pr()}};
+/* ---- Установка как приложение (iPhone / Android / компьютер) ---- */
+let IP=null;
+const isStd=()=>navigator.standalone===true||['standalone','fullscreen','minimal-ui'].some(m=>matchMedia('(display-mode: '+m+')').matches),
+isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform=='MacIntel'&&navigator.maxTouchPoints>1),
+isAnd=()=>/Android/i.test(navigator.userAgent),
+inApp=()=>/FBAN|FBAV|Instagram|Line\/|Telegram|WhatsApp|; wv\)/i.test(navigator.userAgent),
+ibOn=()=>{try{return Date.now()-(+localStorage.getItem('ibx')||0)>6048e5}catch(e){return true}},
+ibx=()=>{try{localStorage.setItem('ibx',Date.now())}catch(e){}const b=$('#ib');b&&b.remove()},
+IB=()=>!isStd()&&(isIOS()||isAnd())&&ibOn()?`<div class="ib" id="ib"><span style="flex:1">📲 <b>Установите приложение</b> — иконка на экране, без адресной строки${isIOS()?'. На iPhone это нужно для уведомлений':' и с уведомлениями'}</span><button class="btn s" onclick="inst()">Как?</button><button class="btn o s" onclick="ibx()" aria-label="Скрыть">✕</button></div>`:'';
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();IP=e});
+addEventListener('appinstalled',()=>{IP=null;toast('✅ Приложение установлено — открывайте его с иконки на экране')});
+async function inst(){
+ if(IP){const e=IP;IP=null;try{e.prompt();const r=await e.userChoice;if(r&&r.outcome=='accepted')toast('Устанавливаем…')}catch(x){}return}
+ const det=(t,h,o)=>`<details ${o?'open':''}><summary><b>${t}</b></summary>${h}</details>`,
+ ios=`<ol><li>Откройте сайт в <b>Safari</b>. Если ссылка пришла в Telegram или WhatsApp — нажмите «Открыть в Safari».</li><li>Нажмите <b>«Поделиться»</b> — квадрат со стрелкой вверх (на iPhone внизу экрана, на iPad вверху).</li><li>Выберите <b>«На экран Домой»</b> (если не видно — нажмите «Ещё» или прокрутите список вниз), затем <b>«Добавить»</b>.</li><li>Открывайте приложение <b>с иконки 🌿 на экране</b>, а не из Safari. Только так приходят уведомления.</li></ol><small>Нужен iOS 16.4 или новее.</small>`,
+ and=`<ol><li>Откройте сайт в <b>Chrome</b>. Если ссылка пришла в Telegram или WhatsApp — меню ⋮ → «Открыть в браузере».</li><li>Нажмите меню <b>⋮</b> справа вверху → <b>«Установить приложение»</b> (или «Добавить на главный экран»).</li><li>Подтвердите <b>«Установить»</b>. Иконка 🌿 появится на экране и в списке приложений.</li></ol><small>В Samsung Internet: меню ≡ → «Добавить на главный экран».</small>`,
+ pc=`<ol><li>В <b>Chrome</b> или <b>Edge</b> нажмите значок установки в правой части адресной строки (монитор со стрелкой)</li><li>или меню <b>⋮</b> → <b>«Установить Niet Café»</b>.</li></ol>`,
+ I=isIOS(),A=isAnd(),w=inApp()?'<p class="bad">⚠️ Вы открыли сайт внутри другого приложения (Telegram, WhatsApp и т. п.) — отсюда установить нельзя. Откройте ссылку в Safari (iPhone) или Chrome (Android).</p>':'';
+ $('#md').innerHTML=`<div class="sheet"><div><h3>📲 Установить приложение</h3>${isStd()?'<p class="ok">✅ Приложение уже установлено — вы пользуетесь им прямо сейчас.</p>':'<p>Откроется как обычное приложение: своя иконка, весь экран и уведомления о заказах даже при закрытом приложении.</p>'}${w}${det('📱 iPhone / iPad',ios,I)}${det('🤖 Android',and,A)}${det('💻 Компьютер',pc,!I&&!A)}<button class="btn" onclick="$('#md').innerHTML=''">Понятно</button></div></div>`}
 /* ---- Web Push: уведомления при закрытом приложении ---- */
 const VAPID=(typeof VAPID_KEY=='string'?VAPID_KEY:'').replace(/\s+/g,'');/* ключ задаётся в самом верху файла, в блоке VAPID_KEY */
 let PUSHON=false;

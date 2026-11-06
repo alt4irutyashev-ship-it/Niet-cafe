@@ -1,6 +1,10 @@
-/* Niet Café: service worker — установка как приложение и Web Push (уведомления при закрытом приложении). Страницы не кэширует. */
-self.addEventListener('install',()=>self.skipWaiting());
-self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+/* Niet Café: service worker — установка как приложение и Web Push (уведомления при закрытом приложении). Страницы не кэширует (только заглушка «нет связи»). */
+const CACHE='niet-shell-v1';
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['offline.html','icon-192.png'])).catch(()=>{}).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).catch(()=>{}).then(()=>self.clients.claim())));
+// Страницы всегда берём из сети (чтобы не застревать на старой версии). Кэш — только заглушка «нет связи».
+self.addEventListener('fetch',e=>{const r=e.request;if(r.mode!=='navigate')return;
+  e.respondWith(fetch(r).catch(()=>caches.match('offline.html').then(x=>x||new Response('Нет связи',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}}))))});
 
 self.addEventListener('push',e=>{
   let d={};
