@@ -460,7 +460,7 @@ $('#pt').innerHTML=Object.values(g).map(a=>`<div style="page-break-after:always"
 document.body.classList.add('pk');print();document.body.classList.remove('pk')}
 const rpt=k=>{const x=KT[k];if(x){PQ=[...x.items];pr()}};
 /* ---- Web Push: уведомления при закрытом приложении ---- */
-const VAPID='';/* публичный VAPID-ключ: создайте в vapid-keys.html и вставьте сюда */
+const VAPID='';/* публичный VAPID-ключ: создайте в vapid-keys.html и вставьте сюда */ BALS36XRObXtRb4Y4q8hmHBCTRfju6ObsFTKYJ33SziEE1-gBRc69QeoxQWBdEHRB5ynmQ_3iacL4Z7BkHozPJY
 let PUSHON=false;
 const b64u=s=>{const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))},
 pushRole=()=>me&&['waiter','kitchen','bar'].includes(me.role),
