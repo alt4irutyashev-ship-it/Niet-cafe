@@ -28,7 +28,7 @@ const dp=id=>+(D.find(d=>d.id==id)||{}).price||0,dn=id=>(D.find(d=>d.id==id)||{}
 const hd=()=>`<header><b>${RN[me.role]} · ${E(me.name)}</b><button class="btn o s" onclick="out()">Выйти</button></header>`;
 const tabs=(a,d)=>{tab=tab||d;return`<div class="row tb">${a.map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';render()">${n}</button>`).join('')}</div>`};
 function login(){$('#app').innerHTML=`<div class="lg"><h2>Niet Café</h2><input id="u" placeholder="Логин" autocapitalize="off"><input id="p" type="password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">Войти</button><p id="er" class="bad"></p></div>`}
-async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase()+'@niet.cafe',password:$('#p').value});if(error)return $('#er').textContent='Неверный логин или пароль';init()}
+async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase()+'@niet.cafe',password:$('#p').value});if(error)return $('#er').textContent=(/invalid login/i.test(error.message)?'Неверный логин или пароль':'Ошибка: '+error.message);init()}
 async function out(){await sb.auth.signOut();me=null;login()}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(!session)return login();
 const{data}=await sb.from('profiles').select('*').eq('id',session.user.id).single();me=data;tab='';tbl=0;
