@@ -36,6 +36,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;fon
 .of{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.of label{display:grid;gap:3px;font-size:12px;color:var(--mu)}.of select,.of input{width:100%;color:var(--tx)}
 </style></head><body><div id="app"></div><div id="md"></div><div id="pt"></div><div id="nt"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>var VAPID_KEY='BALS36XRObXtRb4Y4q8hmHBCTRfju6ObsFTKYJ33SziEE1-gBRc69QeoxQWBdEHRB5ynmQ_3iacL4Z7BkHozPJY';/* ПУБЛИЧНЫЙ ключ push из vapid-keys.html — вставьте МЕЖДУ кавычками, ничего больше не трогайте. Приватный ключ сюда НЕЛЬЗЯ. */</script>
 <script>
 /* ВСТАВЬТЕ СВОИ ДАННЫЕ из Supabase: Project Settings -> API (Project URL и anon public key) */
 const URL_='https://iamomamsltqfpeljahuy.supabase.co',KEY='sb_publishable_4l_mW-_FDstSX2IhEtjvSQ_kf0rr55J';
@@ -460,7 +461,7 @@ $('#pt').innerHTML=Object.values(g).map(a=>`<div style="page-break-after:always"
 document.body.classList.add('pk');print();document.body.classList.remove('pk')}
 const rpt=k=>{const x=KT[k];if(x){PQ=[...x.items];pr()}};
 /* ---- Web Push: уведомления при закрытом приложении ---- */
-const VAPID='';/* публичный VAPID-ключ: создайте в vapid-keys.html и вставьте сюда */ BALS36XRObXtRb4Y4q8hmHBCTRfju6ObsFTKYJ33SziEE1-gBRc69QeoxQWBdEHRB5ynmQ_3iacL4Z7BkHozPJY
+const VAPID=(typeof VAPID_KEY=='string'?VAPID_KEY:'').replace(/\s+/g,'');/* ключ задаётся в самом верху файла, в блоке VAPID_KEY */
 let PUSHON=false;
 const b64u=s=>{const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))},
 pushRole=()=>me&&['waiter','kitchen','bar'].includes(me.role),
@@ -469,6 +470,7 @@ async function pushOn(v){const t=m=>{if(v)toast(m)};
  try{
   if(!pushRole())return;
   if(!VAPID)return t('Push не настроен: не указан VAPID-ключ в index.html');
+  if(!/^[A-Za-z0-9_-]{85,90}$/.test(VAPID))return t('VAPID-ключ вставлен неверно: нужен ПУБЛИЧНЫЙ ключ (около 87 символов), без пробелов и кавычек внутри');
   if(!pushOk())return t('Этот браузер не поддерживает push. На iPhone: «Поделиться» → «На экран Домой», затем открыть иконку');
   if(Notification.permission=='default')await Notification.requestPermission();
   if(Notification.permission!='granted')return t('Уведомления запрещены — разрешите их для этого сайта в настройках браузера');
