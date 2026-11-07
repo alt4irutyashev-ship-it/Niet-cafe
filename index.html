@@ -47,7 +47,7 @@ const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 const RN={waiter:'Официант',kitchen:'Кухня',bar:'Бар',boss:'Руководитель',none:'Без роли'};
 let me=null,tab='',tbl=0,cat=0,per=1,D=[],C=[],ch=null;
 const q=async p=>{const r=await p;if(r.error){alert(r.error.message);throw r.error}return r.data};
-const dp=id=>+(D.find(d=>d.id==id)||{}).price||0,dn=id=>(D.find(d=>d.id==id)||{}).name||'';
+const dp=id=>+(D.find(d=>d.id==id)||{}).price||0,ip=i=>i.price!=null?+i.price:dp(i.dish_id),dn=id=>(D.find(d=>d.id==id)||{}).name||'';
 const hd=()=>`<header><span class="brand">🌿 Niet Café</span><span class="who">${RN[me.role]||'Без роли'} · ${E(me.name||me.login||'без имени')}</span>${me.role!='boss'?'<button class="btn o s" onclick="tst()" title="Проверить звук">🔔</button>':''}${isStd()?'':'<button class="btn o s" onclick="inst()" title="Установить как приложение">📲</button>'}<button class="btn o s" onclick="out()">Выйти</button></header>${NB()}${IB()}`;
 const tabs=(a,d)=>{tab=tab||d;return`<div class="row tb">${a.map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';render()">${n}</button>`).join('')}</div>`};
 function login(){$('#app').innerHTML=`<div class="lg card"><div style="font-size:44px">🌿</div><h2 style="margin:0">Niet Café</h2><small style="color:var(--mu)">Заказы и учёт</small><input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username"><input id="p" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">Войти</button><p id="er" class="bad"></p>${isStd()?'':'<button class="btn o s" onclick="inst()">📲 Установить как приложение</button>'}</div>`}
@@ -62,7 +62,7 @@ let RV=0;async function render(){if(!me)return;const n=++RV,h={waiter:wv,kitchen
 /* ---- отделы, статусы, имена ---- */
 const STN={kitchen:['Кухня','🍳'],bar:['Бар','🍹']},isS=r=>!!STN[r],SL={new:'новый',accepted:'принято',cooking:'принято',ready:'готово',served:'выдано'},SC=s=>s=='cooking'?'accepted':s,schip=s=>`<span class="sc ${SC(s)}">${SL[s]||s}</span>`;
 let ST={},CUR=null,CARTS={},WO=[],WS=[],WB=0,wnote='';
-const wn=id=>(ST[id]||{}).name||'—',lab=o=>o.kind=='take'?'Вынос-'+(o.tk_no||'?'):'Стол '+o.tbl,osum=it=>it.reduce((a,i)=>a+i.qty*dp(i.dish_id),0),
+const wn=id=>(ST[id]||{}).name||'—',lab=o=>o.kind=='take'?'Вынос-'+(o.tk_no||'?'):'Стол '+o.tbl,osum=it=>it.reduce((a,i)=>a+i.qty*ip(i),0),
 uid=()=>(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=='x'?r:r&3|8).toString(16)}),
 cnt=it=>{const c={new:0,accepted:0,ready:0,served:0};it.forEach(i=>c[SC(i.status)]+=i.qty||1);return c},
 cchips=it=>{const c=cnt(it);return[['new','🟠'],['accepted','🔵'],['ready','🟢']].filter(([k])=>c[k]).map(([k,e])=>`<span class="sc ${k}">${e} ${c[k]}</span>`).join('')};
@@ -73,7 +73,7 @@ return`<div class="card tk"><div class="row"><b style="flex:1;font-size:17px">${
 /* ---- официант ---- */
 const ck=()=>!CUR?'':CUR.id?'o'+CUR.id:CUR.k=='take'?'xn':'t'+CUR.tbl,cart=()=>CARTS[ck()]||(CARTS[ck()]=[]);
 const paint=()=>{if(!me||me.role!='waiter')return;const y=scrollY;$('#app').innerHTML=hd()+'<main>'+wview()+'</main>';scrollTo(0,y)};
-async function wv(){const f=new Date();f.setHours(0,0,0,0);[WO,WS]=await Promise.all([q(sb.from('orders').select('*,order_items(*)').eq('status','open').order('id')),q(sb.from('orders').select('kind,order_items(dish_id,qty)').eq('waiter',me.id).gte('created',f.toISOString()))]);return wview()}
+async function wv(){const f=new Date();f.setHours(0,0,0,0);[WO,WS]=await Promise.all([q(sb.from('orders').select('*,order_items(*)').eq('status','open').order('id')),q(sb.from('orders').select('kind,order_items(*)').eq('waiter',me.id).gte('created',f.toISOString()))]);return wview()}
 function wview(){const O=WO;
 if(CUR&&CUR.id&&!O.find(o=>o.id==CUR.id)){delete CARTS['o'+CUR.id];CUR=null}
 if(CUR&&!CUR.id&&CUR.k=='dine'){const ex=O.find(o=>o.kind!='take'&&o.tbl==CUR.tbl);if(ex){CARTS['o'+ex.id]=CARTS['t'+CUR.tbl]||[];delete CARTS['t'+CUR.tbl];CUR={id:ex.id}}}
@@ -131,12 +131,12 @@ const opt=P=>P.map(p=>`<option value="${p.id}">${E(p.name)} (${E(p.unit)})</opti
 async function bv(){const h=tabs([['db','Сводка'],['rp','Отчёты'],['fn','Финансы'],['mn','Меню'],['cl','Калькуляция'],['or','Заказы'],['oh','Хронология'],['kp','KPI'],['wh','Продукты'],['hs','История'],['us','Сотрудники'],['sx','Затраты']],'db');
 return h+await({db,rp:rep,fn:fin,mn,cl,or:ors,oh,kp,wh:pe,hs:his,us:usr,sx})[tab]()}
 async function rep(){const f0=new Date();f0.setHours(0,0,0,0);f0.setDate(f0.getDate()-(per-1));const from=per?f0.toISOString():'1970-01-01';
-const[O,R,P,S]=await Promise.all([q(sb.from('orders').select('closed,order_items(dish_id,qty)').eq('status','closed').gte('closed',from)),q(sb.from('recipes').select('*')),q(sb.from('products').select('id,price')),q(sb.from('settings').select('*'))]);
+const[O,R,P,S]=await Promise.all([allp(()=>sb.from('orders').select('closed,order_items(*)').eq('status','closed').gte('closed',from).order('id')),q(sb.from('recipes').select('*')),q(sb.from('products').select('id,price')),q(sb.from('settings').select('*'))]);
 const s=Object.fromEntries(S.map(x=>[x.key,+x.val])),pr=Object.fromEntries(P.map(p=>[p.id,+p.price])),cost={},m={};R.forEach(r=>cost[r.dish_id]=(cost[r.dish_id]||0)+r.qty*(pr[r.product_id]||0));let rev=0,cg=0;
-O.forEach(o=>o.order_items.forEach(i=>{const d=D.find(x=>x.id==i.dish_id),r=m[i.dish_id]||(m[i.dish_id]={n:d.name,q:0,rv:0,c:0}),c=i.qty*(cost[i.dish_id]||0);r.q+=i.qty;r.rv+=i.qty*d.price;r.c+=c;rev+=i.qty*d.price;cg+=c}));
+O.forEach(o=>o.order_items.forEach(i=>{const d=D.find(x=>x.id==i.dish_id)||{name:'Блюдо #'+i.dish_id},r=m[i.dish_id]||(m[i.dish_id]={n:d.name,q:0,rv:0,c:0}),c=i.qty*(cost[i.dish_id]||0),v=i.qty*ip(i);r.q+=i.qty;r.rv+=v;r.c+=c;rev+=v;cg+=c}));
 const days=per||Math.max(1,Math.ceil((Date.now()-Math.min(Date.now(),...O.map(o=>+new Date(o.closed))))/864e5)),fx=((s.labor||0)+(s.rent||0)+(s.util||0))/30*days,np=rev-cg-fx;LR={per,rev,cg,fx,np,rows:Object.values(m)};
 return`<div class="row">${[[1,'Сегодня'],[7,'7 дней'],[30,'30 дней'],[0,'Всё время']].map(([k,n])=>`<button class="chip ${per==k?'on':''}" onclick="per=${k};render()">${n}</button>`).join('')}<button class="btn o s" onclick="csv()">CSV</button><button class="btn o s" onclick="print()">Печать</button></div><div class="g2"><div class="card">Выручка<br><b>${M(rev)}</b></div><div class="card">Продукты<br><b>${M(cg)}</b></div><div class="card">Валовая прибыль<br><b>${M(rev-cg)}</b></div><div class="card">Постоянные затраты (${days} дн.)<br><b>${M(fx)}</b></div><div class="card">Итоговая прибыль<br><b class="${np<0?'bad':'ok'}">${M(np)}</b></div><div class="card">Чеков<br><b>${O.length}</b></div></div><table><tr><th>Блюдо</th><th>Порций</th><th>Выручка</th><th>Продукты</th><th>Прибыль</th></tr>${Object.values(m).sort((a,b)=>b.rv-a.rv).map(r=>`<tr><td>${E(r.n)}</td><td>${r.q}</td><td>${M(r.rv)}</td><td>${M(r.c)}</td><td>${M(r.rv-r.c)}</td></tr>`).join('')||'<tr><td colspan="5">Нет закрытых заказов</td></tr>'}</table>`}
-async function ors(){const[A,H]=await Promise.all([q(sb.from('orders').select('*,order_items(*)').eq('status','open').order('id')),q(sb.from('orders').select('*,order_items(dish_id,qty)').order('id',{ascending:false}).limit(40))]);
+async function ors(){const[A,H]=await Promise.all([q(sb.from('orders').select('*,order_items(*)').eq('status','open').order('id')),q(sb.from('orders').select('*,order_items(*)').order('id',{ascending:false}).limit(40))]);
 return`<h4>Сейчас в работе · ${A.length}</h4>${A.map(o=>ocard(o,0)).join('')||'<p>Открытых заказов нет</p>'}<h4>История</h4><table class="tl"><tr><th>№</th><th>Стол / вынос</th><th>Официант</th><th>Статус</th><th>Сумма</th></tr>${H.map(o=>`<tr><td>${o.id}</td><td>${E(lab(o))}${o.note?' · '+E(o.note):''}</td><td>${E(wn(o.waiter))}</td><td>${o.status=='closed'?'закрыт · '+(o.pay=='card'?'карта':'нал'):'открыт'}</td><td>${M(osum(o.order_items))}</td></tr>`).join('')}</table>`}
 /* ---- История заказов: хронология с фильтрами (вкладка «Хронология») ---- */
 let oF={fr:'',to:'',w:'',c:'',s:'',k:'',pay:'',st:'',qs:'',mn:'',mx:'',t1:'',t2:'',so:'d',lim:60},OX=new Set(),OC=null,OQT;
@@ -156,7 +156,7 @@ async function odata(){
  let a=oF.fr,b=oF.to;if(a>b)[a,b]=[b,a];
  const key=a+'|'+b;if(OC&&OC.key==key)return OC;
  const A=new Date(a+'T00:00:00'),B=new Date(b+'T23:59:59.999');
- const O=await allp(()=>sb.from('orders').select('id,kind,tk_no,tbl,note,status,pay,waiter,created,closed,order_items(id,dish_id,qty,station,status,label,created,batch,accepted_at,accepted_by,ready_at,ready_by,served_at)').gte('created',A.toISOString()).lte('created',B.toISOString()).order('id',{ascending:false}));
+ const O=await allp(()=>sb.from('orders').select('id,kind,tk_no,tbl,note,status,pay,waiter,created,closed,order_items(*)').gte('created',A.toISOString()).lte('created',B.toISOString()).order('id',{ascending:false}));
  let G=[];try{const r=await sb.from('order_log').select('*').gte('t',A.toISOString()).order('t').limit(1000);if(!r.error)G=r.data||[]}catch(e){}
  const gm={};G.forEach(g=>(gm[g.order_id]=gm[g.order_id]||[]).push(g));
  O.forEach(o=>{o.items=o.order_items.slice().sort((x,y)=>x.id-y.id);o.sum=osum(o.items);o.log=gm[o.id]||[];o.end=o.closed?new Date(o.closed):null;
@@ -248,11 +248,11 @@ async function oh(){
 /* ---- KPI: кто сколько взял и как быстро работают отделы ---- */
 let kpd=1;const fs_=s=>s==null?'—':s<90?Math.round(s)+' сек':(s/60).toFixed(1)+' мин',avg=(a,n)=>n?a/n:null;
 async function kp(){const f=new Date();f.setHours(0,0,0,0);f.setDate(f.getDate()-(kpd-1));
-const O=await q(sb.from('orders').select('id,kind,status,waiter,created,order_items(dish_id,qty,station,status,created,accepted_at,accepted_by,ready_at,ready_by)').gte('created',f.toISOString()).order('id',{ascending:false}).limit(1000));
+const O=await allp(()=>sb.from('orders').select('id,kind,status,waiter,created,order_items(*)').gte('created',f.toISOString()).order('id',{ascending:false}));
 const W={},S={},mkw=id=>W[id]||(W[id]={n:wn(id),o:0,x:0,q:0,s:0,c:0}),mks=id=>S[id]||(S[id]={n:wn(id),r:(ST[id]||{}).role,a:0,d:0,rs:0,rn:0,cs:0,cn:0});
 Object.values(ST).filter(u=>u.role=='waiter').forEach(u=>mkw(u.id));let ts=0,tn=0,tx=0,sum=0;
 O.forEach(o=>{const w=mkw(o.waiter);w.o++;if(o.kind=='take'){w.x++;tx++}if(o.status=='closed')w.c++;
-o.order_items.forEach(i=>{w.q+=i.qty;const v=i.qty*dp(i.dish_id);w.s+=v;sum+=v;
+o.order_items.forEach(i=>{w.q+=i.qty;const v=i.qty*ip(i);w.s+=v;sum+=v;
 if(i.accepted_by&&i.accepted_at){const e=mks(i.accepted_by);e.a+=i.qty;e.rs+=(new Date(i.accepted_at)-new Date(i.created))/1e3;e.rn++}
 if(i.ready_by&&i.ready_at){const e=mks(i.ready_by);e.d+=i.qty;if(i.accepted_at){const c=(new Date(i.ready_at)-new Date(i.accepted_at))/1e3;e.cs+=c;e.cn++;ts+=c;tn++}}})});
 const WL_=Object.values(W).sort((a,b)=>b.s-a.s),SL_=Object.values(S).sort((a,b)=>b.d-a.d),md=['🥇','🥈','🥉'];
@@ -335,12 +335,12 @@ let ffr=null,fto=null,FD=null;
 const ds=d=>new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10),fq0=n=>{const t=new Date();t.setHours(0,0,0,0);t.setDate(t.getDate()-n);return ds(t)},fset=(x,y)=>{if(!x||!y)return;ffr=x;fto=y;render()};
 async function fin(){if(!ffr){ffr=fq0(6);fto=fq0(0)}
 let A=new Date(ffr+'T00:00:00'),B=new Date(fto+'T23:59:59.999');if(A>B)[A,B]=[B,A];const n=Math.max(1,Math.round((B-A)/864e5)),F0=new Date(A);F0.setDate(F0.getDate()-n);
-const[O,RR,PP,LG]=await Promise.all([q(sb.from('orders').select('closed,order_items(dish_id,qty)').eq('status','closed').gte('closed',F0.toISOString()).lte('closed',B.toISOString())),q(sb.from('recipes').select('*')),q(sb.from('products').select('id,name,unit,price')),q(sb.from('stock_log').select('*').gte('t',F0.toISOString()).lte('t',B.toISOString()).order('t',{ascending:false}))]);
+const[O,RR,PP,LG]=await Promise.all([allp(()=>sb.from('orders').select('closed,order_items(*)').eq('status','closed').gte('closed',F0.toISOString()).lte('closed',B.toISOString()).order('id')),q(sb.from('recipes').select('*')),q(sb.from('products').select('id,name,unit,price')),allp(()=>sb.from('stock_log').select('*').gte('t',F0.toISOString()).lte('t',B.toISOString()).order('id',{ascending:false}))]);
 const dk=d=>new Date(d).toLocaleDateString('ru'),pr=Object.fromEntries(PP.map(p=>[p.id,p])),cost={},mk=()=>({rev:0,cg:0,buy:0,waste:0}),cur=mk(),prv=mk(),dd={};let ch=0;
 RR.forEach(r=>cost[r.dish_id]=(cost[r.dish_id]||0)+r.qty*(pr[r.product_id]?+pr[r.product_id].price:0));
 for(let d=new Date(A);d<=B&&Object.keys(dd).length<366;d.setDate(d.getDate()+1))dd[dk(d)]={...mk(),d:new Date(d)};
 const add=(t,k,v)=>{const T=new Date(t),c=T>=A;(c?cur:prv)[k]+=v;if(c){const e=dd[dk(T)];if(e)e[k]+=v}};
-O.forEach(o=>{if(new Date(o.closed)>=A)ch++;o.order_items.forEach(i=>{add(o.closed,'rev',i.qty*dp(i.dish_id));add(o.closed,'cg',i.qty*(cost[i.dish_id]||0))})});
+O.forEach(o=>{if(new Date(o.closed)>=A)ch++;o.order_items.forEach(i=>{add(o.closed,'rev',i.qty*ip(i));add(o.closed,'cg',i.qty*(cost[i.dish_id]||0))})});
 LG.forEach(l=>add(l.t,l.kind=='in'?'buy':'waste',+l.sum||0));
 const bp={},pp={};LG.filter(l=>l.kind=='in').forEach(l=>{const b=new Date(l.t)>=A?bp:pp,e=b[l.product_id]||(b[l.product_id]={q:0,s:0});e.q+=+l.qty;e.s+=+l.sum});
 const inc=c=>c.rev-c.buy-c.waste,dev=cur.buy-cur.cg-cur.waste,days=Object.values(dd).reverse(),W=LG.filter(l=>l.kind=='waste'&&new Date(l.t)>=A),
@@ -381,7 +381,7 @@ OPN={in:['Приход','ok'],waste:['Списание','bad'],sale:['Расхо
 const allp=async f=>{let r=[],a=0;for(;;){const x=await q(f().range(a,a+999));r=r.concat(x);if(x.length<1000)return r;a+=1000}};
 async function hdata(){if(!ffr){ffr=fq0(6);fto=fq0(0)}
 let A=new Date(ffr+'T00:00:00'),B=new Date(fto+'T23:59:59.999');if(A>B)[A,B]=[B,A];
-const[O,RR,PP,LG]=await Promise.all([allp(()=>sb.from('order_items').select('id,created,qty,dish_id,label,tbl').gte('created',A.toISOString()).lte('created',B.toISOString()).order('id')),q(sb.from('recipes').select('*')),q(sb.from('products').select('*').order('name')),q(sb.from('stock_log').select('*').gte('t',A.toISOString()).lte('t',B.toISOString()))]);
+const[O,RR,PP,LG]=await Promise.all([allp(()=>sb.from('order_items').select('id,created,qty,dish_id,label,tbl').gte('created',A.toISOString()).lte('created',B.toISOString()).order('id')),q(sb.from('recipes').select('*')),q(sb.from('products').select('*').order('name')),allp(()=>sb.from('stock_log').select('*').gte('t',A.toISOString()).lte('t',B.toISOString()).order('id'))]);
 const pr=Object.fromEntries(PP.map(p=>[p.id,p])),mv=[],cons={},rc={},sm={};
 LG.forEach(l=>mv.push({t:new Date(l.t),pid:l.product_id,k:l.kind=='in'?'in':'waste',q:+l.qty,s:+l.sum||0,note:l.note||''}));
 RR.forEach(r=>(rc[r.dish_id]=rc[r.dish_id]||[]).push(r));
@@ -408,9 +408,9 @@ let sq='';const tot3=p=>+(p.station=='bar'?p.s_bar:p.s_kitchen)||0,copy=a=>navig
 const dl=()=>D.filter(d=>d.active!==false&&(sq?d.name.toLowerCase().includes(sq.toLowerCase()):d.cat_id==cat)).map(d=>`<div class="dh" onclick="cadd(${d.id})">${E(d.name)}<span>${M(d.price)}</span></div>`).join('');
 const qt=async(id,n)=>{await q(n<1?sb.from('order_items').delete().eq('id',id):sb.from('order_items').update({qty:n}).eq('id',id));render()};
 async function db(){const f7=new Date(Date.now()-6*864e5);f7.setHours(0,0,0,0);
-const[O,OP,P]=await Promise.all([q(sb.from('orders').select('closed,order_items(dish_id,qty)').eq('status','closed').gte('closed',f7.toISOString())),q(sb.from('orders').select('id').eq('status','open')),q(sb.from('products').select('*'))]);
+const[O,OP,P]=await Promise.all([allp(()=>sb.from('orders').select('closed,order_items(*)').eq('status','closed').gte('closed',f7.toISOString()).order('id')),q(sb.from('orders').select('id').eq('status','open')),q(sb.from('products').select('*'))]);
 const day=d=>new Date(d).toLocaleDateString('ru'),t0=day(Date.now()),dr={},top={};
-O.forEach(o=>{const k=day(o.closed);dr[k]=(dr[k]||0)+o.order_items.reduce((a,x)=>a+x.qty*dp(x.dish_id),0);if(k==t0)o.order_items.forEach(i=>top[i.dish_id]=(top[i.dish_id]||0)+i.qty)});
+O.forEach(o=>{const k=day(o.closed);dr[k]=(dr[k]||0)+o.order_items.reduce((a,x)=>a+x.qty*ip(x),0);if(k==t0)o.order_items.forEach(i=>top[i.dish_id]=(top[i.dish_id]||0)+i.qty)});
 const days=[...Array(7)].map((_,i)=>{const d=new Date(Date.now()-(6-i)*864e5);return[d.toLocaleDateString('ru',{weekday:'short'}),dr[day(d)]||0]}),mx=Math.max(1,...days.map(x=>x[1])),tc=O.filter(o=>day(o.closed)==t0).length,rev=dr[t0]||0,low=P.filter(p=>tot3(p)<+p.min_qty);
 return`<div class="g2"><div class="card">💰 Выручка сегодня<br><b>${M(rev)}</b></div><div class="card">🧾 Чеков сегодня<br><b>${tc}</b></div><div class="card">📊 Средний чек<br><b>${M(tc?rev/tc:0)}</b></div><div class="card">🍽️ Открытых заказов<br><b>${OP.length}</b></div><div class="card">📦 Мало на складе<br><b class="${low.length?'bad':'ok'}">${low.length}</b></div></div><div class="card"><h4>Выручка за 7 дней</h4><div class="bars">${days.map(([n,v])=>`<div class="bc"><small>${v?Math.round(v/1000)+'к':''}</small><div class="bt"><div class="bb" style="height:${v?Math.max(3,Math.round(v/mx*100)):0}%" title="${M(v)}"></div></div><span>${n}</span></div>`).join('')}</div></div></div><div class="two"><div class="card"><h4>Топ блюд сегодня</h4>${Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,n])=>`<div class="dh" style="cursor:default">${E(dn(id))}<span>${n}</span></div>`).join('')||'Пока нет продаж'}</div><div class="card"><h4>Нужно докупить</h4>${low.map(p=>`<div class="dh" style="cursor:default">${p.station=='bar'?'🍹':'🍳'} ${E(p.name)}<span class="bad">${fu(+p.min_qty-tot3(p),p.unit)}</span></div>`).join('')||'Всё в норме'}</div></div>`}
 setInterval(()=>{if(me&&me.role!='boss')render()},30000);
