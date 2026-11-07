@@ -47,7 +47,7 @@ const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 const RN={waiter:'Официант',kitchen:'Кухня',bar:'Бар',boss:'Руководитель',none:'Без роли'};
 let me=null,tab='',tbl=0,cat=0,per=1,D=[],C=[],ch=null;
 const q=async p=>{const r=await p;if(r.error){alert(r.error.message);throw r.error}return r.data};
-const dp=id=>+(D.find(d=>d.id==id)||{}).price||0,ip=i=>i.price!=null?+i.price:dp(i.dish_id),dn=id=>(D.find(d=>d.id==id)||{}).name||'';
+const dp=id=>+(D.find(d=>d.id==id)||{}).price||0,ip=i=>i.price!=null?+i.price:dp(i.dish_id),ic=(i,c)=>i.cost!=null?+i.cost:(c[i.dish_id]||0),dn=id=>(D.find(d=>d.id==id)||{}).name||'';
 const hd=()=>`<header><span class="brand">🌿 Niet Café</span><span class="who">${RN[me.role]||'Без роли'} · ${E(me.name||me.login||'без имени')}</span>${me.role!='boss'?'<button class="btn o s" onclick="tst()" title="Проверить звук">🔔</button>':''}${isStd()?'':'<button class="btn o s" onclick="inst()" title="Установить как приложение">📲</button>'}<button class="btn o s" onclick="out()">Выйти</button></header>${NB()}${IB()}`;
 const tabs=(a,d)=>{tab=tab||d;return`<div class="row tb">${a.map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';render()">${n}</button>`).join('')}</div>`};
 function login(){$('#app').innerHTML=`<div class="lg card"><div style="font-size:44px">🌿</div><h2 style="margin:0">Niet Café</h2><small style="color:var(--mu)">Заказы и учёт</small><input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username"><input id="p" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">Войти</button><p id="er" class="bad"></p>${isStd()?'':'<button class="btn o s" onclick="inst()">📲 Установить как приложение</button>'}</div>`}
@@ -133,13 +133,13 @@ return h+await({db,rp:rep,fn:fin,mn,cl,or:ors,oh,kp,wh:pe,hs:his,us:usr,sx})[tab
 async function rep(){const f0=new Date();f0.setHours(0,0,0,0);f0.setDate(f0.getDate()-(per-1));const from=per?f0.toISOString():'1970-01-01';
 const[O,R,P,S]=await Promise.all([allp(()=>sb.from('orders').select('closed,order_items(*)').eq('status','closed').gte('closed',from).order('id')),q(sb.from('recipes').select('*')),q(sb.from('products').select('id,price')),q(sb.from('settings').select('*'))]);
 const s=Object.fromEntries(S.map(x=>[x.key,+x.val])),pr=Object.fromEntries(P.map(p=>[p.id,+p.price])),cost={},m={};R.forEach(r=>cost[r.dish_id]=(cost[r.dish_id]||0)+r.qty*(pr[r.product_id]||0));let rev=0,cg=0;
-O.forEach(o=>o.order_items.forEach(i=>{const d=D.find(x=>x.id==i.dish_id)||{name:'Блюдо #'+i.dish_id},r=m[i.dish_id]||(m[i.dish_id]={n:d.name,q:0,rv:0,c:0}),c=i.qty*(cost[i.dish_id]||0),v=i.qty*ip(i);r.q+=i.qty;r.rv+=v;r.c+=c;rev+=v;cg+=c}));
+O.forEach(o=>o.order_items.forEach(i=>{const d=D.find(x=>x.id==i.dish_id)||{name:'Блюдо #'+i.dish_id},r=m[i.dish_id]||(m[i.dish_id]={n:d.name,q:0,rv:0,c:0}),c=i.qty*ic(i,cost),v=i.qty*ip(i);r.q+=i.qty;r.rv+=v;r.c+=c;rev+=v;cg+=c}));
 const days=per||Math.max(1,Math.ceil((Date.now()-Math.min(Date.now(),...O.map(o=>+new Date(o.closed))))/864e5)),fx=((s.labor||0)+(s.rent||0)+(s.util||0))/30*days,np=rev-cg-fx;LR={per,rev,cg,fx,np,rows:Object.values(m)};
 return`<div class="row">${[[1,'Сегодня'],[7,'7 дней'],[30,'30 дней'],[0,'Всё время']].map(([k,n])=>`<button class="chip ${per==k?'on':''}" onclick="per=${k};render()">${n}</button>`).join('')}<button class="btn o s" onclick="csv()">CSV</button><button class="btn o s" onclick="print()">Печать</button></div><div class="g2"><div class="card">Выручка<br><b>${M(rev)}</b></div><div class="card">Продукты<br><b>${M(cg)}</b></div><div class="card">Валовая прибыль<br><b>${M(rev-cg)}</b></div><div class="card">Постоянные затраты (${days} дн.)<br><b>${M(fx)}</b></div><div class="card">Итоговая прибыль<br><b class="${np<0?'bad':'ok'}">${M(np)}</b></div><div class="card">Чеков<br><b>${O.length}</b></div></div><table><tr><th>Блюдо</th><th>Порций</th><th>Выручка</th><th>Продукты</th><th>Прибыль</th></tr>${Object.values(m).sort((a,b)=>b.rv-a.rv).map(r=>`<tr><td>${E(r.n)}</td><td>${r.q}</td><td>${M(r.rv)}</td><td>${M(r.c)}</td><td>${M(r.rv-r.c)}</td></tr>`).join('')||'<tr><td colspan="5">Нет закрытых заказов</td></tr>'}</table>`}
 async function ors(){const[A,H]=await Promise.all([q(sb.from('orders').select('*,order_items(*)').eq('status','open').order('id')),q(sb.from('orders').select('*,order_items(*)').order('id',{ascending:false}).limit(40))]);
 return`<h4>Сейчас в работе · ${A.length}</h4>${A.map(o=>ocard(o,0)).join('')||'<p>Открытых заказов нет</p>'}<h4>История</h4><table class="tl"><tr><th>№</th><th>Стол / вынос</th><th>Официант</th><th>Статус</th><th>Сумма</th></tr>${H.map(o=>`<tr><td>${o.id}</td><td>${E(lab(o))}${o.note?' · '+E(o.note):''}</td><td>${E(wn(o.waiter))}</td><td>${o.status=='closed'?'закрыт · '+(o.pay=='card'?'карта':'нал'):'открыт'}</td><td>${M(osum(o.order_items))}</td></tr>`).join('')}</table>`}
 /* ---- История заказов: хронология с фильтрами (вкладка «Хронология») ---- */
-let oF={fr:'',to:'',w:'',c:'',s:'',k:'',pay:'',st:'',qs:'',mn:'',mx:'',t1:'',t2:'',so:'d',lim:60},OX=new Set(),OC=null,OQT;
+let oF={v:'o',fr:'',to:'',w:'',c:'',s:'',k:'',pay:'',st:'',qs:'',mn:'',mx:'',t1:'',t2:'',so:'d',lim:60},OX=new Set(),OC=null,OQT;
 const ot=(d,s)=>new Date(d).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit',...(s?{second:'2-digit'}:{})}),
 odk=d=>ds(new Date(d)),
 odt=d=>{const s=new Date(d).toLocaleDateString('ru',{weekday:'long',day:'numeric',month:'long'});return s[0].toUpperCase()+s.slice(1)},
@@ -198,7 +198,7 @@ function oflt(O){
 const otm=(d,o)=>odk(d)==odk(o.created)?ot(d,1):new Date(d).toLocaleDateString('ru',{day:'2-digit',month:'2-digit'})+' '+ot(d,1);
 function odet(o){
  return`<div class="od"><div class="tlv">${oev(o).map(e=>`<div class="te"><span class="tt">${otm(e.t,o)}</span><span>${e.ic}</span><div><b>${E(e.tx)}</b>${e.by?` <small>· ${E(e.by)}</small>`:''}${e.ref?` <small class="dl">+${fdur(e.t-e.ref)}</small>`:''}${e.det?`<br><small>${E(e.det)}</small>`:''}</div></div>`).join('')}</div>
- <h4>Состав заказа</h4>${o.items.map(i=>`<div class="dh" style="cursor:default"><span class="dn">${(STN[i.station]||['',''])[1]} <b>${i.qty}×</b> ${E(dnm(i.dish_id))}</span><small>${M(i.qty*dp(i.dish_id))}</small>${schip(i.status)}</div>`).join('')||'<small>Пусто</small>'}</div>`
+ <h4>Состав заказа</h4>${o.items.map(i=>`<div class="dh" style="cursor:default"><span class="dn">${(STN[i.station]||['',''])[1]} <b>${i.qty}×</b> ${E(dnm(i.dish_id))}</span><small>${M(i.qty*ip(i))}</small>${schip(i.status)}</div>`).join('')||'<small>Пусто</small>'}</div>`
 }
 function orow(o){
  const x=OX.has(o.id),cl=o.status=='closed',dur=(o.end||new Date())-new Date(o.created);
@@ -212,6 +212,7 @@ function ocsv(){
  a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=`orders_${oF.fr}_${oF.to}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5e3)
 }
 async function oh(){
+ if(oF.v=='p')return ohp();
  const DD=await odata(),L=oflt(DD.O),f=oF;
  const opt=(a,v)=>a.map(([k,n])=>`<option value="${k}" ${k==v?'selected':''}>${E(n)}</option>`).join(''),
  uniq=a=>[...new Set(a.filter(Boolean))].map(id=>[id,wn(id)]).sort((a,b)=>a[1].localeCompare(b[1],'ru')),
@@ -220,7 +221,7 @@ async function oh(){
  act=['w','c','s','k','pay','st','qs','mn','mx','t1','t2'].filter(k=>f[k]!=='').length;
  const cl=L.filter(o=>o.status=='closed'),rev=cl.reduce((a,o)=>a+o.sum,0),dsum=cl.reduce((a,o)=>a+(o.end-new Date(o.created)),0),
  card=cl.filter(o=>o.pay=='card'),cash=cl.length-card.length,cs=card.reduce((a,o)=>a+o.sum,0),tk=L.filter(o=>o.kind=='take').length;
- const top=`<div class="card"><div class="row">${chips}<span style="flex:1"></span><button class="btn o s" onclick="orf()">🔄 Обновить</button><button class="btn s" onclick="ocsv()">⬇ Скачать CSV</button></div>
+ const top=osub()+`<div class="card"><div class="row">${chips}<span style="flex:1"></span><button class="btn o s" onclick="orf()">🔄 Обновить</button><button class="btn s" onclick="ocsv()">⬇ Скачать CSV</button></div>
  <div class="row"><b>Период:</b><input type="date" value="${f.fr}" onchange="opr(this.value||oF.fr,oF.to)"><span>—</span><input type="date" value="${f.to}" onchange="opr(oF.fr,this.value||oF.to)"></div>
  <div class="row"><input id="oqs" type="search" style="flex:1;min-width:200px" placeholder="🔍 Поиск: стол, №, блюдо, сотрудник, заметка" value="${E(f.qs)}" oninput="oq(this.value)"></div>
  <div class="of">
@@ -243,6 +244,87 @@ async function oh(){
  if(!L.length)body='<div class="card"><p>По выбранным фильтрам заказов нет.</p></div>';
  if(L.length>f.lim)body+=`<div class="row" style="justify-content:center"><button class="btn o" onclick="oF.lim+=60;render()">Показать ещё (${L.length-f.lim})</button></div>`;
  return top+sm+body+(DD.logOn?'':'<small style="color:var(--mu)">Отмены позиций появятся в хронологии после выполнения 6_order_history.sql.</small>')
+}
+
+/* ---- Хронология → Изменение цен (блюда и продукты) ---- */
+let pF={t:'',k:'',fr:'',to:'',qs:'',so:'d',at:'',lim:80},PCa=null;
+const osub=()=>`<div class="row tb">${[['o','🧾 Заказы'],['p','💲 Изменение цен']].map(([k,n])=>`<button class="${oF.v=='p'?(k=='p'?'on':''):(k=='o'?'on':'')}" onclick="oset('v','${k}')">${n}</button>`).join('')}</div>`,
+pset=(k,v)=>{pF[k]=v;pF.lim=80;render()},
+ppr=(a,b)=>{pF.fr=a;pF.to=b;pF.lim=80;render()},
+psel=k=>{pF.k=k;pF.at='';render()},
+prf=()=>{PCa=null;render()},
+prst=()=>{pF={t:'',k:'',fr:'',to:'',qs:'',so:'d',at:'',lim:80};render()},
+pqs=v=>{clearTimeout(OQT);OQT=setTimeout(()=>{pF.qs=v;pF.lim=80;render()},350)};
+async function pdata(){
+ if(PCa)return PCa;
+ let H=[],a=0;
+ for(;;){let r;try{r=await sb.from('price_history').select('*').order('id').range(a,a+999)}catch(e){return{err:e.message||String(e)}}
+  if(r.error)return PCa={err:r.error.message};
+  H=H.concat(r.data);if(r.data.length<1000)break;a+=1000}
+ const P=await q(sb.from('products').select('id,name,unit,station,price')),pm=Object.fromEntries(P.map(p=>[p.id,p]));
+ H.forEach(h=>{const dd=h.kind=='dish'?D.find(d=>d.id==h.item_id):pm[h.item_id];h.key=(h.kind=='dish'?'d:':'p:')+h.item_id;h.name=dd?dd.name:'(удалён) #'+h.item_id;h.unit=h.kind=='product'&&dd?dd.unit:'';h.price=+h.price;h.old=h.old_price==null?null:+h.old_price;h.tt=new Date(h.t)});
+ return PCa={H,pm}
+}
+const pdt=d=>new Date(d).toLocaleString('ru',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+ppc=h=>h.old?Math.round((h.price-h.old)/h.old*100):0,
+pgood=h=>h.kind=='dish'?h.price>h.old:h.price<h.old;   // блюдо дороже — хорошо, продукт дешевле — хорошо
+function pchart(hs){
+ const W=600,Hh=150,t0=+hs[0].tt,t1=Math.max(Date.now(),+hs[hs.length-1].tt+864e5),sp=Math.max(1,t1-t0),mn=Math.min(...hs.map(h=>h.price)),mx=Math.max(...hs.map(h=>h.price)),rg=mx-mn||1,
+ X=t=>34+(t-t0)/sp*(W-50),Y=v=>Hh-24-(v-mn)/rg*(Hh-54);
+ let d=`M${X(t0).toFixed(1)},${Y(hs[0].price).toFixed(1)}`;
+ hs.slice(1).forEach((h,i)=>{d+=` L${X(+h.tt).toFixed(1)},${Y(hs[i].price).toFixed(1)} L${X(+h.tt).toFixed(1)},${Y(h.price).toFixed(1)}`});
+ d+=` L${X(t1).toFixed(1)},${Y(hs[hs.length-1].price).toFixed(1)}`;
+ return`<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;height:auto;max-height:190px" role="img" aria-label="График цены"><path d="${d}" fill="none" stroke="#4f7f4a" stroke-width="2.5" stroke-linejoin="round"/>${hs.map(h=>`<circle cx="${X(+h.tt).toFixed(1)}" cy="${Y(h.price).toFixed(1)}" r="4" fill="#fff" stroke="#4f7f4a" stroke-width="2"/>`).join('')}
+ <text x="2" y="${Y(mx)+4}" font-size="11" fill="#7a8f75">${M(mx)}</text>${mn!=mx?`<text x="2" y="${Y(mn)+4}" font-size="11" fill="#7a8f75">${M(mn)}</text>`:''}
+ <text x="34" y="${Hh-4}" font-size="11" fill="#7a8f75">${new Date(t0).toLocaleDateString('ru')}</text><text x="${W-14}" y="${Hh-4}" font-size="11" text-anchor="end" fill="#7a8f75">сейчас</text></svg>`
+}
+function pflt(H){
+ const f=pF,A=f.fr?new Date(f.fr+'T00:00:00'):null,B=f.to?new Date(f.to+'T23:59:59.999'):null,s=f.qs.trim().toLowerCase();
+ return H.filter(h=>h.old!=null&&(!f.t||h.kind==f.t)&&(!f.k||h.key==f.k)&&(!A||h.tt>=A)&&(!B||h.tt<=B)&&(!s||h.name.toLowerCase().includes(s))).sort((a,b)=>f.so=='a'?a.tt-b.tt||a.id-b.id:b.tt-a.tt||b.id-a.id)
+}
+function pcsv(){
+ if(!PCa||!PCa.H)return;
+ const r=[['Дата','Время','Тип','Название','Ед.','Было, ₸','Стало, ₸','Изменение, ₸','Изменение, %','Кто изменил']];
+ pflt(PCa.H).forEach(h=>r.push([h.tt.toLocaleDateString('ru'),ot(h.tt,1),h.kind=='dish'?'Блюдо':'Продукт',h.name,h.unit,h.old,h.price,+(h.price-h.old).toFixed(4),ppc(h),h.uid?wn(h.uid):'']));
+ const t='\ufeff'+r.map(a=>a.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n'),a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download='price_history.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5e3)
+}
+async function ohp(){
+ const DD=await pdata(),sub=osub();
+ if(DD.err)return sub+`<div class="card"><p class="bad">История цен недоступна: ${E(DD.err)}</p><p>Выполните <b>9_price_history.sql</b> в Supabase (SQL Editor) и обновите страницу.</p></div>`;
+ const H=DD.H,f=pF,L=pflt(H),up=L.filter(h=>h.price>h.old).length,items={};
+ H.forEach(h=>{if(!f.t||h.kind==f.t)items[h.key]={k:h.key,n:h.name,kind:h.kind}});
+ const IL=Object.values(items).sort((a,b)=>a.n.localeCompare(b.n,'ru')),og=kd=>IL.filter(x=>x.kind==kd).map(x=>`<option value="${x.k}" ${x.k==f.k?'selected':''}>${E(x.n)}</option>`).join('');
+ const chips=[['Всё время','',''],['7 дней',fq0(6),fq0(0)],['30 дней',fq0(29),fq0(0)],['Год',fq0(364),fq0(0)]].map(([t,a,b])=>`<button class="chip ${f.fr==a&&f.to==b?'on':''}" onclick="ppr('${a}','${b}')">${t}</button>`).join(''),
+ act=['t','k','fr','to','qs'].filter(k=>f[k]!=='').length;
+ const top=`<div class="card"><div class="row">${chips}<span style="flex:1"></span><button class="btn o s" onclick="prf()">🔄 Обновить</button><button class="btn s" onclick="pcsv()">⬇ Скачать CSV</button></div>
+ <div class="row"><b>Период:</b><input type="date" value="${f.fr}" onchange="ppr(this.value,pF.to)"><span>—</span><input type="date" value="${f.to}" onchange="ppr(pF.fr,this.value)"></div>
+ <div class="row"><input id="pqs" type="search" style="flex:1;min-width:200px" placeholder="🔍 Поиск по названию блюда или продукта" value="${E(f.qs)}" oninput="pqs(this.value)"></div>
+ <div class="of"><label>Что показывать<select onchange="pF.k='';pset('t',this.value)">${[['','Блюда и продукты'],['dish','🍽 Только блюда'],['product','📦 Только продукты']].map(([k,n])=>`<option value="${k}" ${k==f.t?'selected':''}>${n}</option>`).join('')}</select></label>
+ <label>Конкретная позиция<select onchange="psel(this.value)"><option value="">Все позиции</option>${f.t!='product'?`<optgroup label="Блюда">${og('dish')}</optgroup>`:''}${f.t!='dish'?`<optgroup label="Продукты">${og('product')}</optgroup>`:''}</select></label>
+ <label>Сортировка<select onchange="pset('so',this.value)">${[['d','Сначала новые'],['a','Сначала старые']].map(([k,n])=>`<option value="${k}" ${k==f.so?'selected':''}>${n}</option>`).join('')}</select></label></div>
+ ${act?`<div class="row"><small>Фильтров включено: ${act}</small><button class="btn o s" onclick="prst()">✕ Сбросить</button></div>`:''}</div>`;
+ let det='';
+ if(f.k){
+  const hs=H.filter(h=>h.key==f.k).sort((a,b)=>a.tt-b.tt||a.id-b.id);
+  if(hs.length){
+   const h0=hs[0],cur=hs[hs.length-1],u=h0.unit?' / '+E(h0.unit):'',ch=hs.length-1;
+   let at='';
+   if(f.at){const T=new Date(f.at+'T23:59:59.999');let r=null;hs.forEach(h=>{if(h.tt<=T)r=h});at=`<p style="margin:8px 0 0">Цена на <b>${new Date(f.at).toLocaleDateString('ru')}</b>: <b>${M((r||h0).price)}${u}</b>${r?'':' <small>(история начата позже этой даты — показана начальная цена)</small>'}</p>`}
+   det=`<div class="card"><h4>${h0.kind=='dish'?'🍽':'📦'} ${E(h0.name)}</h4><div class="g2"><div class="card">Сейчас<b>${M(cur.price)}</b><small>${u?'за 1 '+E(h0.unit):'за порцию'}</small></div><div class="card">Изменений<b>${ch}</b></div><div class="card">Минимум<b>${M(Math.min(...hs.map(h=>h.price)))}</b></div><div class="card">Максимум<b>${M(Math.max(...hs.map(h=>h.price)))}</b></div></div>
+   ${ch?pchart(hs):'<p><small>Цена ни разу не менялась с момента начала ведения истории.</small></p>'}
+   <div class="row"><b>Цена на дату:</b><input type="date" value="${f.at}" onchange="pset('at',this.value)">${f.at?'<button class="btn o s" onclick="pset(\'at\',\'\')">✕</button>':''}</div>${at}
+   <h4>Периоды цен</h4><table class="tl"><tr><th>С</th><th>По</th><th>Цена</th><th>Дней</th></tr>${hs.map((h,i)=>{const n=hs[i+1],e=n?n.tt:new Date();return`<tr><td>${i?pdt(h.tt):'<small>начальная цена · '+pdt(h.tt)+'</small>'}</td><td>${n?pdt(n.tt):'<b>по сегодня</b>'}</td><td><b>${M(h.price)}</b>${u}</td><td>${Math.max(0,Math.floor((e-h.tt)/864e5))}</td></tr>`}).join('')}</table><small>Заказы считаются по цене, действовавшей в момент заказа. Цены до начала ведения истории восстановить нельзя.</small></div>`
+  }
+ }
+ const sm=`<div class="g2"><div class="card">🔁 Изменений<b>${L.length}</b></div><div class="card">▲ Цена выросла<b>${up}</b></div><div class="card">▼ Цена снизилась<b>${L.length-up}</b></div><div class="card">📋 Затронуто позиций<b>${new Set(L.map(h=>h.key)).size}</b></div></div>`;
+ let body='',day='';
+ L.slice(0,f.lim).forEach(h=>{const k=odk(h.tt);if(k!=day){day=k;body+=`<div class="dy"><span>📅 ${odt(h.tt)}</span><span>${L.filter(x=>odk(x.tt)==k).length} изм.</span></div>`}
+  const g=pgood(h),d=h.price-h.old;
+  body+=`<div class="card tk oc"><div class="oh" onclick="psel('${h.key}')"><b class="ot" style="font-size:15px">${ot(h.tt)}</b><div class="om"><b>${h.kind=='dish'?'🍽':'📦'} ${E(h.name)}</b>${h.unit?` <small>за 1 ${E(h.unit)}</small>`:''}<br><small>${h.uid?'👤 '+E(wn(h.uid)):'&nbsp;'}</small></div><div class="os"><b>${M(h.old)} → ${M(h.price)}</b><br><small class="${g?'ok':'bad'}">${d>0?'▲':'▼'} ${Math.abs(ppc(h))}% (${d>0?'+':'−'}${M(Math.abs(d))})</small></div></div></div>`});
+ if(!L.length)body='<div class="card"><p>Изменений цен по выбранным условиям нет. История ведётся с момента запуска 9_price_history.sql: каждое изменение цены блюда или продукта появится здесь само.</p></div>';
+ if(L.length>f.lim)body+=`<div class="row" style="justify-content:center"><button class="btn o" onclick="pF.lim+=80;render()">Показать ещё (${L.length-f.lim})</button></div>`;
+ return sub+top+det+sm+body
 }
 
 /* ---- KPI: кто сколько взял и как быстро работают отделы ---- */
@@ -340,7 +422,7 @@ const dk=d=>new Date(d).toLocaleDateString('ru'),pr=Object.fromEntries(PP.map(p=
 RR.forEach(r=>cost[r.dish_id]=(cost[r.dish_id]||0)+r.qty*(pr[r.product_id]?+pr[r.product_id].price:0));
 for(let d=new Date(A);d<=B&&Object.keys(dd).length<366;d.setDate(d.getDate()+1))dd[dk(d)]={...mk(),d:new Date(d)};
 const add=(t,k,v)=>{const T=new Date(t),c=T>=A;(c?cur:prv)[k]+=v;if(c){const e=dd[dk(T)];if(e)e[k]+=v}};
-O.forEach(o=>{if(new Date(o.closed)>=A)ch++;o.order_items.forEach(i=>{add(o.closed,'rev',i.qty*ip(i));add(o.closed,'cg',i.qty*(cost[i.dish_id]||0))})});
+O.forEach(o=>{if(new Date(o.closed)>=A)ch++;o.order_items.forEach(i=>{add(o.closed,'rev',i.qty*ip(i));add(o.closed,'cg',i.qty*ic(i,cost))})});
 LG.forEach(l=>add(l.t,l.kind=='in'?'buy':'waste',+l.sum||0));
 const bp={},pp={};LG.filter(l=>l.kind=='in').forEach(l=>{const b=new Date(l.t)>=A?bp:pp,e=b[l.product_id]||(b[l.product_id]={q:0,s:0});e.q+=+l.qty;e.s+=+l.sum});
 const inc=c=>c.rev-c.buy-c.waste,dev=cur.buy-cur.cg-cur.waste,days=Object.values(dd).reverse(),W=LG.filter(l=>l.kind=='waste'&&new Date(l.t)>=A),
@@ -379,13 +461,16 @@ let hsel=0;const hgo=id=>{hsel=id;tab='hs';$('#md').innerHTML='';render()},
 fch=()=>[['Сегодня',fq0(0),fq0(0)],['Вчера',fq0(1),fq0(1)],['7 дней',fq0(6),fq0(0)],['30 дней',fq0(29),fq0(0)],['Этот месяц',fq0(new Date().getDate()-1),fq0(0)]].map(([t,u,v])=>`<button class="chip ${ffr==u&&fto==v?'on':''}" onclick="fset('${u}','${v}')">${t}</button>`).join(''),
 OPN={in:['Приход','ok'],waste:['Списание','bad'],sale:['Расход по продажам','']};
 const allp=async f=>{let r=[],a=0;for(;;){const x=await q(f().range(a,a+999));r=r.concat(x);if(x.length<1000)return r;a+=1000}};
+/* цена продукта на момент времени по журналу цен (если журнала нет — текущая цена) */
+async function phmap(){try{const m={};let a=0;for(;;){const r=await sb.from('price_history').select('item_id,price,t').eq('kind','product').order('id').range(a,a+999);if(r.error)return{};r.data.forEach(h=>(m[h.item_id]=m[h.item_id]||[]).push({t:+new Date(h.t),p:+h.price}));if(r.data.length<1000)break;a+=1000}Object.values(m).forEach(l=>l.sort((x,y)=>x.t-y.t));return m}catch(e){return{}}}
+const ppa=(m,id,t,cur)=>{const l=m[id];if(!l||!l.length)return cur;const T=+new Date(t);let r=l[0];for(const x of l){if(x.t<=T)r=x;else break}return r.p};
 async function hdata(){if(!ffr){ffr=fq0(6);fto=fq0(0)}
 let A=new Date(ffr+'T00:00:00'),B=new Date(fto+'T23:59:59.999');if(A>B)[A,B]=[B,A];
 const[O,RR,PP,LG]=await Promise.all([allp(()=>sb.from('order_items').select('id,created,qty,dish_id,label,tbl').gte('created',A.toISOString()).lte('created',B.toISOString()).order('id')),q(sb.from('recipes').select('*')),q(sb.from('products').select('*').order('name')),allp(()=>sb.from('stock_log').select('*').gte('t',A.toISOString()).lte('t',B.toISOString()).order('id'))]);
-const pr=Object.fromEntries(PP.map(p=>[p.id,p])),mv=[],cons={},rc={},sm={};
+const pr=Object.fromEntries(PP.map(p=>[p.id,p])),mv=[],cons={},rc={},sm={},PHM=await phmap();
 LG.forEach(l=>mv.push({t:new Date(l.t),pid:l.product_id,k:l.kind=='in'?'in':'waste',q:+l.qty,s:+l.sum||0,note:l.note||''}));
 RR.forEach(r=>(rc[r.dish_id]=rc[r.dish_id]||[]).push(r));
-O.forEach(i=>(rc[i.dish_id]||[]).forEach(r=>{const p=pr[r.product_id]||{};mv.push({t:new Date(i.created),pid:r.product_id,k:'sale',q:r.qty*i.qty,s:r.qty*i.qty*(+p.price||0),note:`${dn(i.dish_id)} · ${i.label||(i.tbl?'Стол '+i.tbl:'заказ')} · ${i.qty} порц.`})}));
+O.forEach(i=>(rc[i.dish_id]||[]).forEach(r=>{const p=pr[r.product_id]||{};mv.push({t:new Date(i.created),pid:r.product_id,k:'sale',q:r.qty*i.qty,s:r.qty*i.qty*ppa(PHM,r.product_id,i.created,+p.price||0),note:`${dn(i.dish_id)} · ${i.label||(i.tbl?'Стол '+i.tbl:'заказ')} · ${i.qty} порц.`})}));
 PP.forEach(p=>sm[p.id]={p,in:0,inS:0,waste:0,wS:0,sale:0,sS:0});
 const M2=mv.filter(m=>sm[m.pid]);M2.forEach(m=>{const e=sm[m.pid];if(m.k=='in'){e.in+=m.q;e.inS+=m.s}else if(m.k=='waste'){e.waste+=m.q;e.wS+=m.s}else{e.sale+=m.q;e.sS+=m.s}});
 M2.sort((a,b)=>b.t-a.t);return{A,B,PP,pr,mv:M2,sm}}
