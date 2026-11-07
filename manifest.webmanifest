@@ -10,8 +10,8 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#f4f7ef",
-  "theme_color": "#5f8553",
+  "background_color": "#2d4a33",
+  "theme_color": "#2d4a33",
   "categories": ["business", "food", "productivity"],
   "prefer_related_applications": false,
   "icons": [
