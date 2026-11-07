@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;fon
 .sheet ol{padding-left:20px;margin:8px 0}.sheet li{margin:6px 0}.sheet details{background:#fff;border-radius:12px;padding:8px 12px;margin:8px 0}.sheet summary{cursor:pointer}
 </style></head><body><div id="app"></div><div id="md"></div><div id="pt"></div><div id="nt"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script>var VAPID_KEY='';/* ПУБЛИЧНЫЙ ключ push из vapid-keys.html — вставьте МЕЖДУ кавычками, ничего больше не трогайте. Приватный ключ сюда НЕЛЬЗЯ. */</script>
+<script>var VAPID_KEY='BM5GdB6FM3Tm-GreMLlf7RkLUyHQxkljlHcEufrJGnyEDeaMzkZTX0odkMB3hoyUoL_3_ValQ8nB2B0-iY8Gt6k';/* ПУБЛИЧНЫЙ ключ push из vapid-keys.html — вставьте МЕЖДУ кавычками, ничего больше не трогайте. Приватный ключ сюда НЕЛЬЗЯ. */</script>
 <script>
 /* ВСТАВЬТЕ СВОИ ДАННЫЕ из Supabase: Project Settings -> API (Project URL и anon public key) */
 const URL_='https://iamomamsltqfpeljahuy.supabase.co',KEY='sb_publishable_4l_mW-_FDstSX2IhEtjvSQ_kf0rr55J';
@@ -116,7 +116,7 @@ const T={};r.forEach(i=>{const k=(i.batch||'o'+i.order_id)+'_'+s;(T[k]=T[k]||{k,
 const L=Object.values(T),has=(x,z)=>x.items.some(i=>SC(i.status)==z),N=L.filter(x=>has(x,'new')),W=L.filter(x=>!has(x,'new')&&has(x,'accepted')),R=L.filter(x=>!has(x,'new')&&!has(x,'accepted'));
 syncNew(N);
 const tk=(x,sec)=>{const m=Math.floor((Date.now()-new Date(x.t))/6e4),late=m>15&&sec!='r';
-return`<div class="card tk ${sec=='w'?'cook':''} ${sec=='r'?'done':''} ${late?'late':''}"><div class="row"><b style="flex:1;font-size:19px">${E(x.label)}</b><small>👤 ${E(wn(x.w))}</small><span class="${late?'bad':''}">${m} мин</span><button class="btn o s" onclick="rpt('${x.k}')">🖨️</button></div>${x.items.map(i=>`<div class="dh" style="cursor:default"><span class="dn" style="font-size:16px"><b>${i.qty}×</b> ${tcl(i.dish_id,i.qty)}</span>${schip(i.status)}</div>`).join('')}<div class="row">${sec=='n'?`<button class="btn big" onclick="acc('${x.k}')">✅ Принято</button><button class="btn o s" onclick="rdyT('${x.k}')">⚡ Сразу готово</button>`:sec=='w'?`<button class="btn big" onclick="rdyT('${x.k}')">✅ Всё готово</button>`:'<small class="ok">Готово — ждёт официанта</small>'}</div></div>`},
+return`<div class="card tk ${sec=='w'?'cook':''} ${sec=='r'?'done':''} ${late?'late':''}"><div class="row"><b style="flex:1;font-size:19px">${E(x.label)}</b><small>👤 ${E(wn(x.w))}</small><span class="${late?'bad':''}">${m} мин</span><button class="btn o s" onclick="rpt('${x.k}')">🖨️</button></div>${x.items.map(i=>`<div class="dh" style="cursor:default"><span class="dn" style="font-size:16px"><b>${i.qty}×</b> ${tcl(i.dish_id,i.qty)}</span>${schip(i.status)}${SC(i.status)=='new'?`<button class="btn s" onclick="acci([${i.id}])">Принято</button>`:''}${SC(i.status)=='accepted'?`<button class="btn s" onclick="rdy([${i.id}])">Готово</button>`:''}</div>`).join('')}<div class="row">${sec=='n'?`<button class="btn big" onclick="acc('${x.k}')">✅ Принято</button><button class="btn o s" onclick="rdyT('${x.k}')">⚡ Сразу готово</button>`:sec=='w'?`<button class="btn big" onclick="rdyT('${x.k}')">✅ Всё готово</button>`:'<small class="ok">Готово — ждёт официанта</small>'}</div></div>`},
 sec=(t,a,c)=>a.length?`<h4>${t} · ${a.length}</h4>`+a.map(x=>tk(x,c)).join(''):'';
 return`<div class="row"><span class="sc new">🟠 Новые ${N.length}</span><span class="sc accepted">🔵 В работе ${W.length}</span><span class="sc ready">🟢 Готово ${R.length}</span><span style="flex:1"></span><label><input type="checkbox" ${AP?'checked':''} onchange="AP=this.checked;localStorage.setItem('ap',AP?1:0)"> 🖨️ Автопечать новых заказов</label></div>`+(sec('🔔 Новые — нужно принять',N,'n')+sec('🔥 В работе',W,'w')+sec('✅ Готово — ждёт официанта',R,'r')||'<p>Заказов нет</p>')}
 function syncNew(N){const ids=new Set(N.map(x=>'n_'+x.k));
@@ -126,6 +126,7 @@ nfy({id,kind:'new',ring:true,title:`🔔 НОВЫЙ ЗАКАЗ · ${E(x.label)}`
 if(AP&&!PRD.has(x.k)){PRD.add(x.k);savePRD();qp(x)}})}
 async function acc(k){const x=KT[k];if(!x)return;const ids=x.items.filter(i=>SC(i.status)=='new').map(i=>i.id);if(!ids.length)return;
 await q(sb.from('order_items').update({status:'accepted'}).in('id',ids));dis('n_'+k);render()}
+async function acci(ids){await q(sb.from('order_items').update({status:'accepted'}).in('id',ids).eq('status','new'));render()}
 async function rdy(ids){await q(sb.from('order_items').update({status:'ready'}).in('id',ids));render()}
 const rdyT=k=>{const x=KT[k];if(x)rdy(x.items.filter(i=>SC(i.status)!='ready').map(i=>i.id)).then(()=>dis('n_'+k))};
 const opt=P=>P.map(p=>`<option value="${p.id}">${E(p.name)} (${E(p.unit)})</option>`).join('');
