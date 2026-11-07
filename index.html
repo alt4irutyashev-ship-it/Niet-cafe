@@ -133,6 +133,32 @@ input:focus,select:focus{outline:2px solid #b7ab6a99;border-color:var(--au)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tbl.rdy{box-shadow:0 0 0 3px #40c057}}
 .eye{opacity:.75}.who{line-height:1.2}
 @media(max-width:760px){body:has(.tb.bot) .ub{bottom:calc(56px + env(safe-area-inset-bottom));padding-bottom:12px}body:has(.tb.bot) main{padding-bottom:150px}}
+
+/* читаемость: текст в полях всегда тёмный */
+input,select,textarea{color:#111}
+input::placeholder{color:#7d8479;opacity:1}
+.lg input{color:#111}
+:root{--mu:#5d685a}
+.tb button i,.tb button span{font-style:normal}.tb button i{margin-right:6px;font-size:15px}
+.sheet{z-index:45}
+@media(max-width:760px){
+ .tb.bot{padding:4px 4px calc(4px + env(safe-area-inset-bottom));gap:0;flex-wrap:nowrap;overflow:visible}
+ .tb.bot button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;padding:7px 2px 6px;font-size:11px;font-weight:600;line-height:1.1;color:#5d685a;background:transparent;border-radius:12px}
+ .tb.bot button i{margin:0;font-size:23px;line-height:1;filter:grayscale(.35)}
+ .tb.bot button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .tb.bot button.on{background:#2d4a3318!important;color:var(--g)!important;border:0!important}
+ .tb.bot button.on i{filter:none;transform:translateY(-1px)}
+ .tb.bot button.on span{font-weight:800}
+ .tb.bot button.open{background:#2d4a3310;color:var(--g)}
+ .tb.sub{position:fixed;left:10px;right:10px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:21;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px;background:var(--pa);border:1px solid var(--ln);border-radius:18px;box-shadow:0 10px 34px #22352a40}
+ .tb.sub button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 2px;font-size:11px;border-radius:12px;min-width:0}
+ .tb.sub button i{margin:0;font-size:24px}
+ .tb.sub button span{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ body:has(.tb.bot) main{padding-bottom:104px}
+ body:has(.tb.bot) .ub{bottom:calc(66px + env(safe-area-inset-bottom))}
+ .toast{bottom:calc(92px + env(safe-area-inset-bottom))}
+}
+.eye{font-size:12px;font-weight:700;color:#2d4a33;opacity:1;right:6px}.pw input{padding-right:84px}
 </style></head><body><div id="app"></div><div id="md"></div><div id="pt"></div><div id="nt"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>var VAPID_KEY='BM5GdB6FM3Tm-GreMLlf7RkLUyHQxkljlHcEufrJGnyEDeaMzkZTX0odkMB3hoyUoL_3_ValQ8nB2B0-iY8Gt6k';/* ПУБЛИЧНЫЙ ключ push из vapid-keys.html — вставьте МЕЖДУ кавычками, ничего больше не трогайте. Приватный ключ сюда НЕЛЬЗЯ. */</script>
@@ -146,9 +172,9 @@ let me=null,tab='',tbl=0,cat=0,per=1,D=[],C=[],ch=null;
 const q=async p=>{const r=await p;if(r.error){alert(r.error.message);throw r.error}return r.data};
 const dp=id=>+(D.find(d=>d.id==id)||{}).price||0,ip=i=>i.price!=null?+i.price:dp(i.dish_id),ic=(i,c)=>i.cost!=null?+i.cost:(c[i.dish_id]||0),dn=id=>(D.find(d=>d.id==id)||{}).name||'';
 const hd=()=>`<header><span class="brand"><img src="logo-mark.png" alt="" width="38" height="36"><span class="bn">Niet</span><small>café</small></span><span class="who">${RN[me.role]||'Без роли'} · ${E(me.name||me.login||'без имени')}</span>${me.role!='boss'?'<button class="btn o s" onclick="tst()" title="Проверить звук">🔔</button>':''}${isStd()?'':'<button class="btn o s" onclick="inst()" title="Установить как приложение">📲</button>'}<button class="btn o s" onclick="out()">Выйти</button></header>${NB()}${IB()}`;
-const tabs=(a,d,c)=>{tab=tab||d;return`<div class="row tb ${c||''}">${a.map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';render()">${n}</button>`).join('')}</div>`};
-function login(){$('#app').innerHTML=`<div class="lg card"><img src="logo.png" alt="Niet Café" width="150"><small>Заказы и учёт</small><input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username" onkeydown="event.key=='Enter'&&$('#p').focus()"><div class="pw"><input id="p" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button type="button" class="eye" onclick="pwt()" aria-label="Показать пароль">👁</button></div><button id="lb" class="btn big" onclick="go()">Войти</button><p id="er" class="bad"></p>${isStd()?'':'<button class="btn o s" onclick="inst()">📲 Установить как приложение</button>'}</div>`;setTimeout(()=>{const u=$('#u');u&&u.focus()},60)}
-const pwt=()=>{const p=$('#p');p.type=p.type=='password'?'text':'password'};
+const tabs=(a,d,c)=>{tab=tab||d;return`<div class="row tb ${c||''}">${a.map(([k,n])=>{const s=n.indexOf(' ');return`<button class="${tab==k?'on':''}" onclick="tab='${k}';render()"><i>${n.slice(0,s)}</i><span>${n.slice(s+1)}</span></button>`}).join('')}</div>`};
+function login(){$('#app').innerHTML=`<div class="lg card"><img src="logo.png" alt="Niet Café" width="150"><small>Заказы и учёт</small><input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username" onkeydown="event.key=='Enter'&&$('#p').focus()"><div class="pw"><input id="p" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="event.key=='Enter'&&go()"><button type="button" class="eye" onclick="pwt()" aria-label="Показать пароль">Показать</button></div><button id="lb" class="btn big" onclick="go()">Войти</button><p id="er" class="bad"></p>${isStd()?'':'<button class="btn o s" onclick="inst()">📲 Установить как приложение</button>'}</div>`;setTimeout(()=>{const u=$('#u');u&&u.focus()},60)}
+const pwt=()=>{const p=$('#p');p.type=p.type=='password'?'text':'password';$('.eye').textContent=p.type=='password'?'Показать':'Скрыть'};
 async function go(){const lb=$('#lb');if(lb){lb.disabled=true;lb.textContent='Входим…'}const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase().split('@')[0]+'@niet.cafe',password:pp($('#p').value)});if(error&&lb){lb.disabled=false;lb.textContent='Войти'}if(error)return $('#er').textContent=(/invalid login/i.test(error.message)?'Неверный логин или пароль':'Ошибка: '+error.message);init()}
 async function out(){try{await pushOff()}catch(e){}await sb.auth.signOut();me=null;NA=[];drawN();if(ch){sb.removeChannel(ch);ch=null}login()}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(!session)return login();
@@ -238,9 +264,9 @@ async function rdy(ids){await q(sb.from('order_items').update({status:'ready'}).
 const rdyT=k=>{const x=KT[k];if(x)rdy(x.items.filter(i=>SC(i.status)!='ready').map(i=>i.id)).then(()=>dis('n_'+k))};
 const opt=P=>P.map(p=>`<option value="${p.id}">${E(p.name)} (${E(p.unit)})</option>`).join('');
 /* ---- руководитель ---- */
-let BM=0;const BPRI=[['db','Сводка'],['or','Заказы'],['mn','Меню'],['wh','Продукты'],['fn','Финансы']],BSEC=[['rp','Отчёты'],['cl','Калькуляция'],['oh','Хронология'],['kp','KPI'],['hs','История'],['us','Сотрудники'],['sx','Затраты']];
-async function bv(){tab=tab||'db';const sc=BSEC.find(x=>x[0]==tab),bt=([k,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';BM=0;render()">${n}</button>`,
-h=`<div class="row tb nav">${BPRI.map(bt).join('')}<button class="${sc?'on':BM?'open':''}" onclick="BM=!BM;render()">${sc?sc[1]:'Ещё'} ▾</button></div>${BM?`<div class="row tb sub">${BSEC.map(bt).join('')}</div>`:''}`;
+let BM=0;const BPRI=[['db','📊','Сводка'],['or','🧾','Заказы'],['mn','📖','Меню'],['wh','📦','Продукты'],['fn','💰','Финансы']],BSEC=[['rp','📈','Отчёты'],['cl','🧮','Калькуляция'],['oh','🕒','Хронология'],['kp','🏆','KPI'],['hs','📜','История'],['us','👥','Сотрудники'],['sx','🏷️','Затраты']];
+async function bv(){tab=tab||'db';const sc=BSEC.find(x=>x[0]==tab),bt=([k,i,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';BM=0;render()"><i>${i}</i><span>${n}</span></button>`,
+h=`<div class="row tb nav bot">${BPRI.map(bt).join('')}<button class="${sc?'on':BM?'open':''}" onclick="BM=!BM;render()"><i>${sc?sc[1]:'☰'}</i><span>${sc?sc[2]:'Ещё'}</span></button></div>${BM?`<div class="row tb sub">${BSEC.map(bt).join('')}</div>`:''}`;
 return h+await({db,rp:rep,fn:fin,mn,cl,or:ors,oh,kp,wh:pe,hs:his,us:usr,sx})[tab]()}
 let rfr='',rto='';const rset=(a,b)=>{if(!a||!b)return;rfr=a;rto=b;render()},RALL='2000-01-01';
 async function rep(){if(!rfr){rfr=fq0(0);rto=fq0(0)}
