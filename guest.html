@@ -151,6 +151,8 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;border:0;
 .br-2gis{background:#29a841!important;color:#fff}.br-2gis small,.br-2gis .ft{color:#ffffffd9!important}.br-2gis b{color:#fff}.br-2gis .bimg{width:34px;height:34px;color:#fff}.br-2gis .ft svg{color:#fff!important}
 .li.br-whatsapp{background:#25d366;color:#fff;height:56px}.li.br-whatsapp small{color:#ffffffd9}.li.br-whatsapp svg{color:#fff}.li.br-whatsapp .lt{flex:1;margin-left:10px;font-weight:600}.li .bic{display:grid;place-items:center;width:30px;height:30px}.li .bic .bimg{width:26px;height:26px}
 .bimg{display:inline-grid;place-items:center}.bimg img{display:none;width:100%;height:100%;object-fit:contain}.bimg.ok img{display:block}.bimg.ok svg{display:none}.bimg svg{width:100%!important;height:100%!important}.mini.br .i2 .bimg{width:30px;height:30px}
+.dc .ing{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11.5px;line-height:1.35;color:var(--mute);margin:2px 0 0}
+.comp{font-size:13.5px;line-height:1.5;color:#4a4946;margin:10px 0 4px;padding:10px 12px;background:var(--chip);border-radius:12px}.comp b{color:var(--ink);font-weight:600}
 </style></head><body>
 <div class="app">
  <!-- главная -->
@@ -229,6 +231,7 @@ Object.assign(TX.kz,{s_new:'Жіберілді',s_acc:'Қабылданды',s_c
  h_dlv:'Тапсырыс жеткізілді',h_got:'Тапсырыс берілді',d_end:'Бізді таңдағаныңызға рахмет! Ас болсын',h_srv:'Әкелінді',d_srv:'Ас болсын!',stUpd:'Тапсырыс мәртебесі',hide:'Жасыру',live:'өздігінен жаңарады'});
 Object.assign(TX.ru,{bill:'Ваш заказ',b_new:'Принят',b_cook:'Готовится',b_ready:'Готово',b_srv:'Подано',bNote:'Сумма обновляется сама. Окончательный счёт принесёт официант.',bAll:'Показать все',bLess:'Свернуть'});
 Object.assign(TX.kz,{bill:'Сіздің тапсырысыңыз',b_new:'Қабылданды',b_cook:'Дайындалуда',b_ready:'Дайын',b_srv:'Әкелінді',bNote:'Сома өздігінен жаңарады. Соңғы шотты даяшы әкеледі.',bAll:'Барлығын көрсету',bLess:'Жасыру'});
+Object.assign(TX.ru,{comp:'Состав',addedT:'добавлено в «Мой выбор»'});Object.assign(TX.kz,{comp:'Құрамы',addedT:'«Менің таңдауым»-ға қосылды'});
 const t=k=>TX[LG][k];
 const I=(p,w,fill)=>`<svg viewBox="0 0 24 24" fill="${fill||'none'}" stroke="currentColor" stroke-width="${w||1.6}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const HEART='<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>';
@@ -265,12 +268,18 @@ setInterval(poll,12000);
 const TAGS=d=>(d.tags||'').split(',').map(x=>x.trim()).filter(x=>['new','hit','spicy'].includes(x));
 const tagH=d=>{const a=TAGS(d);return a.length?a.map(x=>`<span class="tg ${x}">${t(x)}</span>`).join(''):''};
 const dish=id=>D.find(x=>x.id==id);
-const pic=d=>d&&d.photo?`<img src="${E(d.photo)}" alt="" loading="lazy">`:`<div class="ph">${DISH}</div>`;
+const pic=(d,big)=>d&&d.photo?(/^menu\/d\d+\.jpg$/.test(d.photo)?`<img src="${big?d.photo:d.photo.replace('menu/','menu/t/')}"${big?` srcset="${d.photo.replace('menu/','menu/t/')} 480w, ${d.photo} 1000w" sizes="(max-width:600px) 100vw, 600px"`:''} alt="${E(d.name)}" loading="lazy" decoding="async">`:`<img src="${E(d.photo)}" alt="" loading="lazy">`):`<div class="ph">${DISH}</div>`;
+/* состав блюда из техкарты (без граммовки) */
+let ING={};const ING_SW=new Set(['охл','охл.','охлажд.','охлаждённая','охлажденная','охлаждённый','охлажденный','зам','зам.','замороженная','замороженный','замороженные','с/м','в/с','кг','г','гр','гр.','шт','шт.','л','мл','уп','уп.','пачка','бут']);
+const ingN=n=>n.replace(/\(.*?\)/g,' ').replace(/\d+([.,]\d+)?\s*(%|кг|гр?|мл|л)?/g,' ').replace(/[«»"]/g,'').toLowerCase().split(/[\s,;]+/).filter(w=>w&&!ING_SW.has(w)).join(' ').trim();
+async function loadIng(){try{const{data,error}=await sb.rpc('guest_ingredients');if(error||!data)return;ING={};data.forEach(r=>{const u=[];(r.items||[]).forEach(n=>{const x=ingN(n);if(x&&!u.includes(x))u.push(x)});ING[r.dish_id]=u});rerender()}catch(e){}}
+const ingS=(d,n)=>{const a=ING[d.id]||[];return a.length?(n?a.slice(0,n):a).join(', ')+(n&&a.length>n?'…':''):''};
 const save=()=>{ls.set('gfav',FAV);ls.set('gcart',CART);const n=Object.values(CART).reduce((a,b)=>a+b,0);$('#bd').hidden=!n;$('#bd').textContent=n};
 const hb=d=>{const f=FAV.includes(d.id);return`<button class="hrt ${f?'on':''}" onclick="tf(${d.id})" aria-label="Избранное">${I(HEART,1.7,f?'currentColor':'none')}</button>`};
 
-function card(d){const n=CART[d.id]||0;return`<div class="dc ${d.stop?'off':''}"><a class="im" href="#d/${d.id}">${pic(d)}${TAGS(d).length?`<span class="tags">${tagH(d)}</span>`:''}</a>${hb(d)}<a class="nm" href="#d/${d.id}">${E(d.name)}${d.descr?', '+E(d.descr.toLowerCase()):''}</a>${d.kcal?`<small class="kc">≈ ${d.kcal} ${t('kc')}${d.weight?' · '+d.weight+(d.cat_id==15||d.cat_id==16?' мл':' г'):''}</small>`:''}<div class="bt"><span class="pr">${d.stop?t('off'):M(d.price)}</span>${d.stop?'':`<button class="add ${n?'in':''}" onclick="ad(${d.id},1)" aria-label="${t('add')}">${n?n:I('<path d="M12 5v14M5 12h14"/>',2.2)}</button>`}</div></div>`}
+function card(d){const n=CART[d.id]||0;return`<div class="dc ${d.stop?'off':''}"><a class="im" href="#d/${d.id}">${pic(d)}${TAGS(d).length?`<span class="tags">${tagH(d)}</span>`:''}</a>${hb(d)}<a class="nm" href="#d/${d.id}">${E(d.name)}</a>${ingS(d,4)?`<small class="ing">${E(ingS(d,4))}</small>`:''}${d.kcal?`<small class="kc">≈ ${d.kcal} ${t('kc')}${d.weight?' · '+d.weight+(d.cat_id==15||d.cat_id==16?' мл':' г'):''}</small>`:''}<div class="bt"><span class="pr">${d.stop?t('off'):M(d.price)}</span>${d.stop?'':`<button class="add ${n?'in':''}" onclick="ad(${d.id},1)" aria-label="${t('add')}">${n?n:I('<path d="M12 5v14M5 12h14"/>',2.2)}</button>`}</div></div>`}
 function tf(id){FAV=FAV.includes(id)?FAV.filter(x=>x!=id):[...FAV,id];save();rerender()}
+function addClose(id){ad(id,qty);toast('✓ '+t('added')+(qty>1?' '+qty+' ×':'')+': '+(dish(id)||{}).name);try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}if(FROM&&history.length>1)history.back();else location.hash='#menu'}
 function ad(id,k){const n=(CART[id]||0)+k;if(n>0)CART[id]=n;else delete CART[id];save();rerender()}
 
 /* главная */
@@ -326,18 +335,18 @@ function cartV(){const it=Object.entries(CART).map(([id,n])=>[dish(id),n]).filte
 
 /* блюдо */
 function dishV(id){const d=dish(id);if(!d)return location.hash='#menu';const f=FAV.includes(d.id),c=C.find(x=>x.id==d.cat_id);
- $('#v-dish').innerHTML=`<div class="hero">${pic(d)}<div class="tb"><button onclick="history.length>1?history.back():location.hash='#menu'" aria-label="Назад">${I('<path d="M15 5l-7 7 7 7"/>',2)}</button><button class="${f?'on':''}" onclick="tf(${d.id})" aria-label="Избранное">${I(HEART,1.7,f?'currentColor':'none')}</button></div></div>
- <div class="pn">${TAGS(d).length?`<div class="tgs">${tagH(d)}</div>`:''}<h2>${E(d.name)}</h2>${d.descr?`<p>${E(d.descr)}</p>`:`<p>${E(c?c.name:'')}</p>`}
+ $('#v-dish').innerHTML=`<div class="hero">${pic(d,1)}<div class="tb"><button onclick="history.length>1?history.back():location.hash='#menu'" aria-label="Назад">${I('<path d="M15 5l-7 7 7 7"/>',2)}</button><button class="${f?'on':''}" onclick="tf(${d.id})" aria-label="Избранное">${I(HEART,1.7,f?'currentColor':'none')}</button></div></div>
+ <div class="pn">${TAGS(d).length?`<div class="tgs">${tagH(d)}</div>`:''}<h2>${E(d.name)}</h2>${d.descr?`<p>${E(d.descr)}</p>`:`<p>${E(c?c.name:'')}</p>`}${ingS(d)?`<div class="comp"><b>${t('comp')}:</b> ${E(ingS(d))}</div>`:''}
  ${[d.weight,d.kcal,d.prot,d.fat,d.carb].some(x=>x!=null&&x!=='')?`<div class="nut">${[['weight','g'],['kcal','kcal'],['prot','p'],['fat','f'],['carb','c']].map(([k,l])=>`<div>${d[k]!=null&&d[k]!==''?+d[k]:'—'}<small>${t(l)}</small></div>`).join('')}</div>`:''}
  ${d.allerg?`<div class="alg"><b>${t('alg')}:</b> ${E(d.allerg)}</div>`:''}${d.kcal!=null||d.allerg?`<small class="apx">${t('approx')}</small>`:''}
  ${d.stop?'':`<div class="qty"><button onclick="qty=Math.max(1,qty-1);dishV(${d.id})" aria-label="−">−</button><b>${qty} ${t('pcs')}</b><button onclick="qty++;dishV(${d.id})" aria-label="+">+</button></div>`}</div>`;
- $('#buy').innerHTML=d.stop?`<button disabled><span class="l">${t('off')}</span></button>`:`<button onclick="ad(${d.id},qty);this.querySelector('.l').innerHTML='${t('added')} ✓'"><span class="p">${M(d.price*qty)}</span><span class="l">${t('add')} ${I(BASKET,1.6)}</span></button>`}
+ $('#buy').innerHTML=d.stop?`<button disabled><span class="l">${t('off')}</span></button>`:`<button onclick="addClose(${d.id})"><span class="p">${M(d.price*qty)}</span><span class="l">${t('add')} ${I(BASKET,1.6)}</span></button>`}
 
 /* навигация */
-function route(){const h=location.hash.slice(1),m=h.match(/^d\/(\d+)$/);cur=m?'dish':(['menu','fav','cart'].includes(h)?h:'home');
+let FROM='',SY={};function route(){const h=location.hash.slice(1),m=h.match(/^d\/(\d+)$/),prev=cur;if(prev&&prev!='dish')SY[prev]=scrollY;cur=m?'dish':(['menu','fav','cart'].includes(h)?h:'home');if(m)FROM=prev!='dish'?prev:FROM;
  ['home','menu','fav','cart'].forEach(v=>$('#v-'+v).hidden=cur!=v);$('#v-dish').hidden=$('#buy').hidden=cur!='dish';
  document.querySelectorAll('.tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v==cur||(cur=='dish'&&a.dataset.v=='menu')));
- if(m){qty=1;$('#v-dish').scrollTop=0}rerender();if(!m)scrollTo(0,0)}
+ if(m){qty=1;$('#v-dish').scrollTop=0}rerender();if(!m){const back=prev=='dish'&&cur==FROM&&SY[cur]!=null;scrollTo(0,back?SY[cur]:0);if(back)requestAnimationFrame(()=>scrollTo(0,SY[cur]))}}
 function rerender(){if(cur=='home')home();if(cur=='menu'){const y=scrollY;paintMenu();scrollTo(0,y)}if(cur=='fav')favV();if(cur=='cart')cartV();if(cur=='dish'){const m=location.hash.match(/\d+/);m&&dishV(+m[0])}}
 addEventListener('hashchange',route);
 function paintText(){document.documentElement.lang=LG=='kz'?'kk':'ru';$('#lang').textContent=LG=='kz'?'РУС':'ҚАЗ';document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));$('#q').placeholder=t('search');rerender()}
@@ -345,7 +354,7 @@ function setLg(){LG=LG=='kz'?'ru':'kz';ls.set('glg',LG);paintText()}
 
 async function loadData(){try{const[c,d,s,l]=await Promise.all([sb.from('cats').select('*').order('id'),sb.from('dishes').select('id,cat_id,name,price,stop,descr,photo,weight,kcal,prot,fat,carb,allerg,tags').order('id'),sb.from('settings').select('key,val').in('key',['service','delivery_fee','delivery_free']),sb.from('links').select('*').order('pos')]);
  L=l.data||[];const SM=Object.fromEntries((s.data||[]).map(x=>[x.key,+x.val]));SV='service' in SM?SM.service:null;if('delivery_fee' in SM)DFEE=SM.delivery_fee;if('delivery_free' in SM)DFREE=SM.delivery_free;if(TB==100)SV=null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;
- for(const k in CART)if(!dish(k)||dish(k).stop)delete CART[k];FAV=FAV.filter(x=>dish(x));save();route();loadBill()}
+ for(const k in CART)if(!dish(k)||dish(k).stop)delete CART[k];FAV=FAV.filter(x=>dish(x));save();route();loadBill();loadIng()}
  catch(e){$('#list').innerHTML=`<div class="empty"><p>${t('err')}</p></div>`}}
 save();paintText();route();loadData();
 if('serviceWorker' in navigator&&location.protocol=='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
