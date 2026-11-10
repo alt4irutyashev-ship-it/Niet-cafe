@@ -137,15 +137,30 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;border:0;
 .stp li.dn i{background:var(--acc);border-color:var(--acc);color:#fff}.stp li.cur i{border-color:var(--acc);box-shadow:0 0 0 4px var(--acc2)}.stp li.cur i::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--acc)}.stp li.cur{color:var(--ink);font-weight:600}
 .sent.ok .stp li i{background:#5b6640;border-color:#5b6640}.sent.ok .stp li::before{background:#5b6640}.sent .sm{display:block;margin-top:10px;font-size:12px;color:var(--mute)}
 #stH .sent{margin:0 0 12px}
+
+/* счёт стола */
+.bill{background:var(--card);border-radius:16px;padding:14px;margin:0 0 12px}.bill .bh{display:flex;align-items:center;gap:8px;margin-bottom:6px}.bill .bh b{font-size:15px}.bill .bh span{font-size:12px;color:var(--mute);flex:1}.bill .bh .pulse{margin-top:0}
+.bi2{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.bi2>div{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0}.bi2 .nm{font-weight:500}.bi2 b{font-weight:600;white-space:nowrap}
+.bs{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--chip);color:#6b6a66}.bs.ck{background:#fbeedb;color:#9a5b14}.bs.rd{background:#e2f1ea;color:#1f6e50}.bs.sv{background:none;padding-left:0;color:var(--mute)}
+.bmore{display:block;width:100%;padding:9px 0 3px;font-size:12.5px;font-weight:600;color:var(--acc);text-align:center}
+.bt2{margin-top:6px}.bt2>div{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#4a4946}.bt2 .tt{font-size:16px;font-weight:700;color:var(--ink);padding-top:6px}.bill .bn{display:block;margin-top:8px;font-size:11px;color:var(--mute)}
+/* соцсети в фирменных цветах */
+.mini.br{min-height:96px;color:#fff}.mini.br small{color:#ffffffd9}.mini.br .bn1{color:#fff;font-weight:600;font-size:13px}.mini.br .i2{color:#fff;width:30px;height:30px;margin-left:auto;margin-top:auto}
+.br-instagram{background:linear-gradient(45deg,#feda75 -10%,#fa7e1e 18%,#d62976 50%,#962fbf 78%,#4f5bd5 110%)!important}
+.br-tiktok{background:#010101!important}.br-tiktok .i2{filter:drop-shadow(-1.5px -1px 0 #25f4ee) drop-shadow(1.5px 1px 0 #fe2c55)}
+.br-2gis{background:#29a841!important;color:#fff}.br-2gis small,.br-2gis .ft{color:#ffffffd9!important}.br-2gis b{color:#fff}.br-2gis .bimg{width:34px;height:34px;color:#fff}.br-2gis .ft svg{color:#fff!important}
+.li.br-whatsapp{background:#25d366;color:#fff;height:56px}.li.br-whatsapp small{color:#ffffffd9}.li.br-whatsapp svg{color:#fff}.li.br-whatsapp .lt{flex:1;margin-left:10px;font-weight:600}.li .bic{display:grid;place-items:center;width:30px;height:30px}.li .bic .bimg{width:26px;height:26px}
+.bimg{display:inline-grid;place-items:center}.bimg img{display:none;width:100%;height:100%;object-fit:contain}.bimg.ok img{display:block}.bimg.ok svg{display:none}.bimg svg{width:100%!important;height:100%!important}.mini.br .i2 .bimg{width:30px;height:30px}
 </style></head><body>
 <div class="app">
  <!-- главная -->
  <section id="v-home">
   <div class="top"><div class="logo" id="logo"></div><h1 data-t="hi">Добро пожаловать!</h1><span class="tblp" id="tblp" hidden></span><button class="cb" id="lang" onclick="setLg()">ҚАЗ</button></div>
   <div id="stH"></div>
+  <div id="billH"></div>
   <div class="duo">
    <a class="mini acc" href="#menu"><small data-t="our">Наше меню</small><b data-t="openS">Открыть</b><div class="ft"><span data-t="look">Блюда и напитки</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10"/><path d="M17 3c-2 1.5-3 4-3 7h3v11"/></svg></div></a>
-   <a class="mini" id="m2gis" href="#" target="_blank" rel="noopener"><small data-t="rev">Ваш отзыв</small><b>2ГИС</b><div class="ft"><span data-t="revS">Оцените нас</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></div></a>
+   <a class="mini br br-2gis" id="m2gis" href="#" target="_blank" rel="noopener"><small data-t="rev">Ваш отзыв</small><b>2ГИС</b><div class="ft"><span data-t="revS">Оцените нас</span><span id="g2i"></span></div></a>
   </div>
   <div class="cl2" id="callW" hidden><button class="cbtn d" id="cw" onclick="call('waiter')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17h12M7 17a5 5 0 0 1 10 0M12 9V7M10 7h4M4 20h16"/></svg><span data-t="callW">Позвать официанта</span></button><button class="cbtn" id="cb" onclick="call('bill')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span data-t="callB">Попросить счёт</span></button></div>
   <div id="outW" hidden></div>
@@ -212,6 +227,8 @@ Object.assign(TX.kz,{s_new:'Жіберілді',s_acc:'Қабылданды',s_c
  h_new:'Тапсырыс жіберілді',d_new:'Растауды күтеміз — әдетте бірер минут',d_newT:'Даяшы жақында растайды',h_acc:'Тапсырыс қабылданды',d_acc:'Жақында дайындай бастаймыз',h_cook:'Дайындалуда',d_cook:'Аспаз тапсырысыңызды дайындап жатыр',
  h_rdyD:'Тапсырыс жиналды',d_rdyD:'Курьерге беріп жатырмыз',h_rdy:'Алуға дайын',d_rdy:'Келіп алуға болады — тапсырыс нөмірін айтыңыз',h_rdyT:'Бәрі дайын',d_rdyT:'Даяшы әкеле жатыр',h_way:'Тапсырыс жолда',d_way:'Курьер сізге келе жатыр',
  h_dlv:'Тапсырыс жеткізілді',h_got:'Тапсырыс берілді',d_end:'Бізді таңдағаныңызға рахмет! Ас болсын',h_srv:'Әкелінді',d_srv:'Ас болсын!',stUpd:'Тапсырыс мәртебесі',hide:'Жасыру',live:'өздігінен жаңарады'});
+Object.assign(TX.ru,{bill:'Ваш заказ',b_new:'Принят',b_cook:'Готовится',b_ready:'Готово',b_srv:'Подано',bNote:'Сумма обновляется сама. Окончательный счёт принесёт официант.',bAll:'Показать все',bLess:'Свернуть'});
+Object.assign(TX.kz,{bill:'Сіздің тапсырысыңыз',b_new:'Қабылданды',b_cook:'Дайындалуда',b_ready:'Дайын',b_srv:'Әкелінді',bNote:'Сома өздігінен жаңарады. Соңғы шотты даяшы әкеледі.',bAll:'Барлығын көрсету',bLess:'Жасыру'});
 const t=k=>TX[LG][k];
 const I=(p,w,fill)=>`<svg viewBox="0 0 24 24" fill="${fill||'none'}" stroke="currentColor" stroke-width="${w||1.6}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const HEART='<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>';
@@ -242,7 +259,7 @@ async function sendOut(){if(SBUSY)return;const its=Object.entries(CART).map(([id
  SBUSY=1;const b=$('#sendB');b.disabled=true;const{data,error}=await sb.rpc('remote_order',{p_items:its,p_kind:OK,p_phone:OF.ph,p_address:OK=='delivery'?OF.ad:null,p_name:OF.nm||null,p_note:OCM||null,p_token:SKEY});SBUSY=0;b.disabled=false;
  if(error){er.textContent=/fetch|network|Failed/i.test(error.message||'')?t('noNet'):(error.message||t('noNet'));return}SKEY='';SSIG='';OCM='';
  SENT={id:data.id,at:Date.now(),st:'new',out:OK,sum:data.sum,fee:data.fee};ls.set('gsent',SENT);CART={};save();rerender();scrollTo(0,0)}
-let PB=0;async function poll(){if(PB||!SENT||FIN.includes(SENT.st)||document.hidden)return;PB=1;try{const{data}=await sb.rpc('guest_order_status',{i:SENT.id});if(data&&data!=SENT.st){SENT.st=data;ls.set('gsent',SENT);rerender();const k={accepted:'h_acc',cooking:'h_cook',ready:SENT.out=='delivery'?'h_rdyD':SENT.out=='take'?'h_rdy':'h_rdyT',way:'h_way',done:SENT.out=='delivery'?'h_dlv':'h_got',served:'h_srv',rejected:'rejT'}[data];if(k){toast(t(k));try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}}}}catch(e){}finally{PB=0}}
+let PB=0;async function poll(){if(PB||!SENT||FIN.includes(SENT.st)||document.hidden)return;PB=1;try{const{data}=await sb.rpc('guest_order_status',{i:SENT.id});if(data&&data!=SENT.st){SENT.st=data;ls.set('gsent',SENT);rerender();loadBill();const k={accepted:'h_acc',cooking:'h_cook',ready:SENT.out=='delivery'?'h_rdyD':SENT.out=='take'?'h_rdy':'h_rdyT',way:'h_way',done:SENT.out=='delivery'?'h_dlv':'h_got',served:'h_srv',rejected:'rejT'}[data];if(k){toast(t(k));try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}}}}catch(e){}finally{PB=0}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});setTimeout(poll,1500);
 setInterval(poll,12000);
 const TAGS=d=>(d.tags||'').split(',').map(x=>x.trim()).filter(x=>['new','hit','spicy'].includes(x));
@@ -259,12 +276,16 @@ function ad(id,k){const n=(CART[id]||0)+k;if(n>0)CART[id]=n;else delete CART[id]
 /* главная */
 function href(k,u){u=(u||'').trim();if(k=='whatsapp'&&/^[+\d\s()-]+$/.test(u))return'https://wa.me/'+u.replace(/\D/g,'');return u}
 const lk=k=>{const l=L.find(x=>x.key==k);return l?href(k,l.url):''};
-function home(){$('#stH').innerHTML=sentH();$('#tblp').hidden=!TB;$('#callW').hidden=!TB||TB==100;$('#tblp').textContent=TB==100?'🛵 '+t('out'):t('tbl')+' '+TB;$('#outW').innerHTML=OUT?`<a class="outb" href="#menu"><b>🛵 ${t('dlv')} ${M(DFEE)} · ${t('free')} ${t('from')} ${M(DFREE)}</b><span>🥡 ${t('pick')} — ${t('free')}. ${t('outHint')}</span></a>`:(!TB?`<a class="outb" href="?take=1"><b>🛵 ${t('outCard')}</b><span>${t('outCardS')} · ${t('dlv')} ${t('free')} ${t('from')} ${M(DFREE)}</span></a>`:'');$('#outW').hidden=!$('#outW').innerHTML;const g=lk('2gis');$('#m2gis').href=g||'#';$('#m2gis').style.visibility=g?'':'hidden';
+function home(){$('#stH').innerHTML=sentH();$('#billH').innerHTML=billH();$('#tblp').hidden=!TB;$('#callW').hidden=!TB||TB==100;$('#tblp').textContent=TB==100?'🛵 '+t('out'):t('tbl')+' '+TB;$('#outW').innerHTML=OUT?`<a class="outb" href="#menu"><b>🛵 ${t('dlv')} ${M(DFEE)} · ${t('free')} ${t('from')} ${M(DFREE)}</b><span>🥡 ${t('pick')} — ${t('free')}. ${t('outHint')}</span></a>`:(!TB?`<a class="outb" href="?take=1"><b>🛵 ${t('outCard')}</b><span>${t('outCardS')} · ${t('dlv')} ${t('free')} ${t('from')} ${M(DFREE)}</span></a>`:'');$('#outW').hidden=!$('#outW').innerHTML;$('#g2i').innerHTML=bIc('2gis');const g=lk('2gis');$('#m2gis').href=g||'#';$('#m2gis').style.visibility=g?'':'hidden';
  const ph=D.filter(d=>d.photo&&!d.stop),o=ph[Math.floor(Date.now()/864e5)%Math.max(1,ph.length)];$('#offW').hidden=!o;
  if(o)$('#offer').outerHTML=`<a class="offer" id="offer" href="#d/${o.id}"><div class="im">${pic(o)}</div><div class="bd"><div class="r"><div><b>${E(o.name)}</b>${o.descr?`<small>${E(o.descr)}</small>`:''}</div><span class="tagp">${M(o.price)}</span></div><span class="btn">${t('more')}</span></div></a>`;
  const so=['instagram','tiktok'].filter(lk);$('#socD').hidden=!so.length;$('#socD').style.gridTemplateColumns=`repeat(${so.length||1},1fr)`;
- $('#socD').innerHTML=so.map(k=>`<a class="mini w" href="${E(lk(k))}" target="_blank" rel="noopener" style="min-height:96px"><small style="color:var(--ink);font-weight:500;font-size:12.5px">${t(k)[0]}</small><small>${t(k)[1]}</small><div class="i2">${I(k=='instagram'?'<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6" fill="currentColor"/>':'<path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.4 2.6 2.2 4.4 5 4.6"/>',1.5)}</div></a>`).join('');
- const w=lk('whatsapp');$('#rows').innerHTML=w?`<a class="li" href="${E(w)}" target="_blank" rel="noopener"><span>${t('whatsapp')}<small>${t('book')}</small></span>${I(CHEV,1.8)}</a>`:''}
+ $('#socD').innerHTML=so.map(k=>`<a class="mini br br-${k}" href="${E(lk(k))}" target="_blank" rel="noopener"><small class="bn1">${t(k)[0]}</small><small>${t(k)[1]}</small><div class="i2">${bIc(k)}</div></a>`).join('');
+ const w=lk('whatsapp');$('#rows').innerHTML=w?`<a class="li br br-whatsapp" href="${E(w)}" target="_blank" rel="noopener"><span class="bic">${bIc('whatsapp')}</span><span class="lt">${t('whatsapp')}<small>${t('book')}</small></span>${I(CHEV,1.8)}</a>`:''}
+/* иконки соцсетей: если в папке icons/ лежат официальные значки (instagram.svg, tiktok.svg, whatsapp.svg, 2gis.svg) — берутся они, иначе простые контурные */
+const BIF={instagram:'<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6" fill="currentColor"/>',tiktok:'<path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.4 2.6 2.2 4.4 5 4.6"/>',
+ whatsapp:'<path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.2 18.4z"/><path d="M9 9.2c.3 2.4 2.4 4.6 5 5l1-1.2-1.6-.8-.8.8c-1-.4-1.9-1.3-2.3-2.3l.8-.8L10.3 8z" stroke-width="1.2"/>','2gis':'<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>'};
+const bIc=k=>`<span class="bimg"><img src="icons/${k}.svg" alt="" onload="this.parentNode.classList.add('ok')" onerror="this.remove()">${I(BIF[k]||'',1.6)}</span>`;
 
 /* меню */
 function paintMenu(){if(!loaded){$('#list').innerHTML=`<div class="empty"><p>${t('load')}</p></div>`;return}
@@ -289,6 +310,14 @@ function sentH(){if(!SENT)return'';const st=SENT.st||'new',ty=SENT.out||'table';
  return`<div class="sent st ${fin?'ok':''}"><div class="sh"><div><small>${t('stUpd')}${SENT.out?` · ${t('ordNo')}${SENT.id}`:''}</small><b>${t(hk[0])}</b><span>${t(hk[1])}</span></div>${fin?`<button class="sx" onclick="sentHide()" aria-label="${t('hide')}">✕</button>`:`<i class="pulse" title="${t('live')}"></i>`}</div>
  <ol class="stp">${steps.map((k,i)=>`<li class="${i<ix||fin?'dn':i==ix?'cur':''}"><i>${i<ix||fin?I('<path d="M5 12l5 5 9-10"/>',2.4):''}</i><span>${t(k)}</span></li>`).join('')}</ol>
  ${SENT.out?`<small class="sm">${SENT.out=='delivery'?'🛵 '+t('dlv'):'🥡 '+t('pick')} · ${M((+SENT.sum||0)+(+SENT.fee||0))}</small>`:''}</div>`}
+/* счёт стола: что уже заказано, статусы и сумма */
+let BILL=null,BB=0,BOPEN=false;const ISTBL=()=>TB>0&&TB<100;
+async function loadBill(){if(BB||!ISTBL()||document.hidden)return;BB=1;try{const{data,error}=await sb.rpc('guest_table_bill',{t:TB});if(error)return;const sig=JSON.stringify(data),old=JSON.stringify(BILL);BILL=data;if(sig!=old&&cur=='home')$('#billH').innerHTML=billH()}catch(e){}finally{BB=0}}
+function billH(){if(!ISTBL()||!BILL||!BILL.items||!BILL.items.length)return'';const L=BILL.items,SK={new:['b_new',''],accepted:['b_cook','ck'],cooking:['b_cook','ck'],ready:['b_ready','rd'],served:['b_srv','sv']},many=L.length>5,V=many&&!BOPEN?L.slice(0,4):L;
+ return`<div class="bill"><div class="bh"><b>${t('bill')}</b><span>${t('tbl')} ${TB}</span><i class="pulse" title="${t('live')}"></i></div>${V.map(i=>{const d=dish(i.dish_id)||{name:'—'},k=SK[i.status]||SK.new;return`<div class="bi2"><div><span class="nm">${i.qty>1?i.qty+' × ':''}${E(d.name)}</span><span class="bs ${k[1]}">${k[1]=='sv'?'✓ ':''}${t(k[0])}</span></div><b>${M(i.qty*i.price)}</b></div>`}).join('')}
+ ${many?`<button class="bmore" onclick="BOPEN=!BOPEN;$('#billH').innerHTML=billH()">${BOPEN?t('bLess'):t('bAll')+' ('+L.length+')'}</button>`:''}
+ <div class="bt2"><div><span>${t('sub')}</span><span>${M(BILL.sub)}</span></div>${+BILL.sv?`<div><span>${t('srv')} ${+BILL.sv}%</span><span>${M(BILL.svc)}</span></div>`:''}<div class="tt"><span>${t('tot')}</span><span>${M(BILL.total)}</span></div></div><small class="bn">${t('bNote')}</small></div>`}
+setInterval(loadBill,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadBill()});
 function sentHide(){SENT=null;ls.set('gsent',null);rerender()}
 function cartV(){const it=Object.entries(CART).map(([id,n])=>[dish(id),n]).filter(x=>x[0]);if(!it.length)return $('#cartL').innerHTML=SENT?sentH()+`<a class="btn" href="#menu" style="border-radius:999px;background:var(--acc)">${t('toMenu')}</a>`:emptyB(t('cartEb'),t('cartE'),BASKET);
  const sub=it.reduce((a,[d,n])=>a+d.price*n,0),sv=SV?Math.round(sub*SV/100):0,fee=OUT&&OK=='delivery'&&sub<DFREE?DFEE:0;
@@ -316,7 +345,7 @@ function setLg(){LG=LG=='kz'?'ru':'kz';ls.set('glg',LG);paintText()}
 
 async function loadData(){try{const[c,d,s,l]=await Promise.all([sb.from('cats').select('*').order('id'),sb.from('dishes').select('id,cat_id,name,price,stop,descr,photo,weight,kcal,prot,fat,carb,allerg,tags').order('id'),sb.from('settings').select('key,val').in('key',['service','delivery_fee','delivery_free']),sb.from('links').select('*').order('pos')]);
  L=l.data||[];const SM=Object.fromEntries((s.data||[]).map(x=>[x.key,+x.val]));SV='service' in SM?SM.service:null;if('delivery_fee' in SM)DFEE=SM.delivery_fee;if('delivery_free' in SM)DFREE=SM.delivery_free;if(TB==100)SV=null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;
- for(const k in CART)if(!dish(k)||dish(k).stop)delete CART[k];FAV=FAV.filter(x=>dish(x));save();route()}
+ for(const k in CART)if(!dish(k)||dish(k).stop)delete CART[k];FAV=FAV.filter(x=>dish(x));save();route();loadBill()}
  catch(e){$('#list').innerHTML=`<div class="empty"><p>${t('err')}</p></div>`}}
 save();paintText();route();loadData();
 if('serviceWorker' in navigator&&location.protocol=='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
