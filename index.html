@@ -37,6 +37,33 @@ table{width:100%;border-collapse:collapse;background:var(--card);border-radius:1
 .lg{max-width:340px;margin:12vh auto 0;text-align:center;display:grid;gap:10px;padding:0 16px}.lg .lo{width:72px;height:72px;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font:700 38px Georgia,serif;margin:0 auto;overflow:hidden}.lg .lo img{width:100%;height:100%;object-fit:cover}.lg h2{margin:4px 0 10px;font-size:22px}.lg input{height:48px}.lg .btn{height:48px}
 h3{margin:12px 0;font-size:18px}h4{margin:12px 0;font-size:15px}
 .nut input{width:72px}.nut{align-items:end}
+
+/* --- v2: контраст, границы, тени (чтобы блоки не сливались с фоном) --- */
+:root{--bg:#e8e4de;--ln:#d6d1c8;--chip:#fff;--sh:0 1px 2px #2b2b2914,0 4px 14px #2b2b2910}
+header{box-shadow:0 2px 10px #2b2b2914;border-bottom:1px solid var(--ln)}
+.card,.list,.hall,table{border:1px solid var(--ln);box-shadow:var(--sh)}
+.card{border-radius:16px}.list{border-radius:16px}
+input,select{border:1px solid #c9c3b8;background:#fff}
+.chip,.tb button{border:1px solid var(--ln);box-shadow:0 1px 2px #2b2b2910}
+.chip.on,.tb button.on{box-shadow:none}
+.g2{gap:12px}
+.g2 .card{position:relative;padding:14px 14px 14px 18px;overflow:hidden;color:#6b6a66;font-size:12.5px;font-weight:500}
+.g2 .card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--g)}
+.g2 .card b{font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.2px}
+th{background:#efebe4;color:#4a4944;border-bottom:1px solid var(--ln)}
+tr:nth-child(even) td{background:#faf8f5}
+td,th{border-bottom:1px solid #e6e1d8}
+h4{margin:18px 2px 8px;font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:#6b6a66}
+.tk{border-left:6px solid var(--g)}
+.tk.late{border-left-color:var(--rd);background:#fdeeed;border-color:#f0c4c1}
+.it{border-bottom:1px solid #e6e1d8}
+.hall{background:#fff;border:2px solid #cfc9be}
+.tbl{border:1.5px solid #cfc9be;box-shadow:0 1px 3px #2b2b2918}
+.tbl.bz{background:var(--g);border-color:#9c6e55;color:#fff}.tbl.bz small{color:#fff!important;opacity:.9}
+.br .bar{background:linear-gradient(90deg,#c99a82,var(--g));border-radius:6px;height:14px}
+.dh{border-bottom:1px solid #e6e1d8}
+.pbar{border-bottom:1px solid #ecd98a}
+@media(max-width:600px){table tbody{display:table;width:100%}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Niet Staff"></head><body><div id="app"></div>
@@ -93,7 +120,8 @@ const tabs=(a,d)=>{tab=tab||d;return`<div class="row tb">${a.map(([k,n])=>`<butt
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}setTimeout(()=>d.remove(),5000)}
 const sums=it=>{const sub=it.reduce((a,i)=>a+i.qty*dp(i.dish_id),0),sv=Math.round(sub*SV/100);return{sub,sv,tot:sub+sv}};
 function login(){$('#app').innerHTML=`<div class="lg"><div style="justify-self:end">${lgB()}</div><span class="lo">${LOGO}</span><h2>Niet Café</h2><input id="u" placeholder="${T('Логин')}" autocapitalize="off"><input id="p" type="password" placeholder="${T('Пароль')}" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">${T('Войти')}</button><p id="er" class="bad"></p></div>`}
-async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase()+'@niet.cafe',password:$('#p').value});if(error){console.error(error);const m=error.message||'';return $('#er').textContent=/invalid login/i.test(m)?T('Неверный логин или пароль'):m}init()}
+const pad=p=>p.length<6?p+'#niet':p; /* Supabase требует от 6 символов: короткие пароли дополняются незаметно */
+async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase()+'@niet.cafe',password:pad($('#p').value)});if(error){console.error(error);const m=error.message||'';return $('#er').textContent=/invalid login/i.test(m)?T('Неверный логин или пароль'):m}init()}
 async function out(){await pushOff();await sb.auth.signOut();me=null;login()}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(!session)return login();
 const{data}=await sb.from('profiles').select('*').eq('id',session.user.id).single();me=data;tab='';tbl=0;
@@ -250,11 +278,16 @@ const upD=async(id,u)=>{await q(sb.from('dishes').update(u).eq('id',id));await l
 async function addD(){const name=$('#dn').value.trim(),price=+$('#dpz').value;if(!name||!(price>0))return alert('Введите название и цену');const id=Math.max(0,...D.map(d=>d.id))+1;await q(sb.from('dishes').insert({id,cat_id:cat,name,price,station:$('#dst').value}));await loadD();render()}
 async function addC(){const n=(prompt('Название новой категории')||'').trim();if(!n)return;const id=Math.max(0,...C.map(c=>c.id))+1;await q(sb.from('cats').insert({id,name:n}));C=await q(sb.from('cats').select('*').order('id'));cat=id;render()}
 async function usr(){const U=await q(sb.from('profiles').select('*').order('name')),ro=v=>Object.entries(RN).map(([k,n])=>`<option value="${k}" ${k==v?'selected':''}>${n}</option>`).join('');
-return`<table><tr><th>Логин</th><th>Роль</th></tr>${U.map(u=>`<tr><td>${E(u.name)}</td><td><select onchange="setr('${u.id}',this.value)">${ro(u.role)}</select></td></tr>`).join('')}</table><div class="card row"><input id="nl" placeholder="Логин"><input id="npw" placeholder="Пароль (от 6 символов)"><select id="nr">${ro('waiter')}</select><button class="btn s" onclick="addu()">Создать</button></div><small>Роль «Без роли» закрывает доступ сотруднику.</small>`}
+return`<table><tr><th>Логин</th><th>Имя</th><th>Роль</th></tr>${U.map(u=>`<tr><td>${E(u.login||u.name)}</td><td style="text-align:left"><input value="${E(u.name)}" style="width:100%;min-width:120px" onchange="setn('${u.id}',this.value)"></td><td><select onchange="setr('${u.id}',this.value)">${ro(u.role)}</select></td></tr>`).join('')}</table><div class="card row"><input id="nl" placeholder="Логин (от 4 символов)" autocapitalize="off"><input id="nn" placeholder="Имя (например, Айжан)"><input id="npw" placeholder="Пароль (от 4 символов)"><select id="nr">${ro('waiter')}</select><button class="btn s" onclick="addu()">Создать</button></div><small>Роль «Без роли» закрывает доступ сотруднику. Имя показывается в шапке, отчётах и уведомлениях.</small>`}
 const setr=async(id,r)=>{await q(sb.from('profiles').update({role:r}).eq('id',id))};
-async function addu(){const l=$('#nl').value.trim().toLowerCase(),pw=$('#npw').value;if(!l||pw.length<6)return alert('Логин и пароль от 6 символов');
-const c=supabase.createClient(URL_,KEY,{auth:{persistSession:false,autoRefreshToken:false}}),{data,error}=await c.auth.signUp({email:l+'@niet.cafe',password:pw});if(error)return alert(error.message);
-await q(sb.from('profiles').update({role:$('#nr').value}).eq('id',data.user.id));render()}
+const setn=async(id,v)=>{v=v.trim();if(v)await q(sb.from('profiles').update({name:v}).eq('id',id));render()};
+async function addu(){const l=$('#nl').value.trim().toLowerCase(),nm=$('#nn').value.trim(),pw=$('#npw').value;
+if(l.length<4||pw.length<4)return alert('Логин и пароль — от 4 символов');
+if(!/^[a-z0-9._-]+$/.test(l))return alert('Логин: только латинские буквы, цифры и символы . _ -');
+if(!nm)return alert('Введите имя сотрудника');
+const c=supabase.createClient(URL_,KEY,{auth:{persistSession:false,autoRefreshToken:false}}),{data,error}=await c.auth.signUp({email:l+'@niet.cafe',password:pad(pw)});if(error)return alert(error.message);
+await q(sb.from('profiles').update({role:$('#nr').value,name:nm}).eq('id',data.user.id));
+await sb.from('profiles').update({login:l}).eq('id',data.user.id);render()}
 async function sx(){const S=await q(sb.from('settings').select('*')),n={labor:'Персонал (ФОТ), в месяц',rent:'Аренда, в месяц',util:'Коммунальные, в месяц',portions:'План порций',service:'Обслуживание, %'};
 return`<div class="card">${S.map(x=>`<div class="row"><span style="width:200px">${n[x.key]||x.key}</span><input type="number" value="${x.val}" onchange="setv('${x.key}',this.value)"></div>`).join('')}</div>`}
 const setv=async(k,v)=>{await q(sb.from('settings').update({val:+v}).eq('key',k));if(k=='service')SV=+v};
