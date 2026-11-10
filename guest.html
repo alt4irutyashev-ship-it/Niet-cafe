@@ -201,8 +201,9 @@ let TB=0;try{const u=+new URLSearchParams(location.search).get('t');if(u>0){TB=u
 let SENT=ls.get('gsent',null);if(SENT&&Date.now()-SENT.at>108e5)SENT=null;
 function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3500)}
 const CD={};async function call(k){if(!TB)return;if(CD[k]&&Date.now()-CD[k]<12e4)return toast(t('wait'));const{error}=await sb.rpc('guest_call',{t:TB,k});if(error)return toast(t('noNet'));CD[k]=Date.now();toast(t(k=='bill'?'okB':'okW'))}
-async function sendOrder(){const its=Object.entries(CART).map(([id,n])=>({dish_id:+id,qty:n}));if(!its.length)return;const b=$('#sendB');b.disabled=true;
- const{data,error}=await sb.rpc('guest_order',{t:TB,its,n:($('#cmt').value||'').trim()});b.disabled=false;if(error)return toast(t('noNet'));
+let SKEY='',SSIG='',SBUSY=0;
+async function sendOrder(){if(SBUSY)return;const its=Object.entries(CART).map(([id,n])=>({dish_id:+id,qty:n}));if(!its.length)return;const note=($('#cmt').value||'').trim(),sig=JSON.stringify(its)+'|'+note;if(sig!=SSIG||!SKEY){SSIG=sig;SKEY=(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2))}SBUSY=1;const b=$('#sendB');b.disabled=true;
+ const{data,error}=await sb.rpc('guest_order',{t:TB,its,n:note,k:SKEY});SBUSY=0;b.disabled=false;if(error)return toast(t('noNet'));SKEY='';SSIG='';
  SENT={id:data,at:Date.now(),st:'new'};ls.set('gsent',SENT);CART={};save();rerender()}
 async function poll(){if(!SENT||cur!='cart')return;const{data}=await sb.rpc('guest_order_status',{i:SENT.id});if(data&&data!=SENT.st){SENT.st=data;ls.set('gsent',SENT);rerender()}}
 setInterval(poll,15000);

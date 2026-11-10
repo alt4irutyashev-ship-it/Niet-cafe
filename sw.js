@@ -1,5 +1,5 @@
 /* Niet Café: работа без интернета. При изменении файлов сайта увеличьте номер версии. */
-const V = 'niet-v2';
+const V = 'niet-v3';
 const SHELL = ['./index.html', './guest.html', './manifest.json', './guest.webmanifest', './icon-192.png', './icon-512.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'];
 
@@ -36,10 +36,11 @@ self.addEventListener('push', e => {
   e.waitUntil((async () => {
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     // если приложение открыто на экране — оно само покажет окно; на iPhone уведомление нужно показывать всегда
+    wins.forEach(w => { try { w.postMessage({ push: d }); } catch (_) {} });
     if (wins.some(w => w.visibilityState === 'visible') && !/iPhone|iPad|iPod/.test(self.navigator.userAgent)) return;
     await self.registration.showNotification(d.title || 'Niet Café', {
       body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag,
-      icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [200, 100, 200], data: { kind: d.kind || '' },
+      icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [200, 100, 200], silent: false, requireInteraction: ['new', 'ready', 'cancel'].includes(d.kind), data: { kind: d.kind || '' },
     });
   })());
 });
