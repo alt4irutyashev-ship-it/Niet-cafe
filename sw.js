@@ -1,28 +1,30 @@
-/* Niet Café: service worker — установка как приложение и Web Push (уведомления при закрытом приложении). Страницы не кэширует (только заглушка «нет связи»). */
-const CACHE='niet-shell-v2';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['offline.html','icon-192.png','logo.png'])).catch(()=>{}).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).catch(()=>{}).then(()=>self.clients.claim())));
-// Страницы всегда берём из сети (чтобы не застревать на старой версии). Кэш — только заглушка «нет связи».
-self.addEventListener('fetch',e=>{const r=e.request;if(r.mode!=='navigate')return;
-  e.respondWith(fetch(r).catch(()=>caches.match('offline.html').then(x=>x||new Response('Нет связи',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}}))))});
+/* Niet Café: работа без интернета. При изменении файлов сайта увеличьте номер версии. */
+const V = 'niet-v1';
+const SHELL = ['./index.html', './guest.html', './manifest.json', './guest.webmanifest', './icon-192.png', './icon-512.png',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'];
 
-self.addEventListener('push',e=>{
-  let d={};
-  try{d=e.data?e.data.json():{}}catch(_){d={title:'Niet Café',body:e.data?e.data.text():''}}
-  e.waitUntil((async()=>{
-    const cl=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-    const vis=cl.some(c=>c.visibilityState==='visible');
-    const apple=/iPhone|iPad|iPod/.test(self.navigator.userAgent);
-    // Приложение открыто на экране — оно само покажет окно и звук. Safari на iPhone требует показывать уведомление на каждый push, поэтому там показываем тихо и сразу убираем.
-    if(vis&&!apple)return;
-    await self.registration.showNotification(d.title||'Niet Café',{
-      body:d.body||'',tag:d.tag||undefined,renotify:!!d.tag,
-      requireInteraction:d.kind!=='accepted',
-      vibrate:[400,150,400],silent:vis,
-      icon:'icon-192.png',badge:'icon-192.png',data:{url:'./'}
-    });
-    if(vis){await new Promise(r=>setTimeout(r,1500));const n=await self.registration.getNotifications({tag:d.tag});n.forEach(x=>x.close())}
-  })());
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(V).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
-self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(l=>{for(const c of l)if('focus'in c)return c.focus();return self.clients.openWindow('./')}))});
+const put = (req, res) => { if (res && res.ok) { const c = res.clone(); caches.open(V).then(x => x.put(req, c)); } return res; };
+const netFirst = req => fetch(req).then(r => put(req, r)).catch(() => caches.match(req, { ignoreSearch: req.mode === 'navigate' }));
+const cacheFirst = req => caches.match(req).then(r => r || fetch(req).then(x => put(req, x)));
+
+self.addEventListener('fetch', e => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const u = new URL(req.url);
+  if (u.pathname.includes('/auth/') || u.pathname.includes('/realtime/')) return;
+  // фото блюд — из кэша
+  if (u.pathname.includes('/storage/v1/object/public/')) return e.respondWith(cacheFirst(req));
+  // меню для гостей можно смотреть без сети
+  if (/\/rest\/v1\/(cats|dishes|links|settings)\b/.test(u.pathname)) return e.respondWith(netFirst(req));
+  if (u.pathname.includes('/rest/v1/') || u.pathname.includes('/rpc/')) return; // рабочие данные — только из сети
+  // страницы, иконки, шрифты, библиотека
+  if (u.origin === location.origin || /cdn\.jsdelivr|fonts\.(googleapis|gstatic)/.test(u.host)) e.respondWith(netFirst(req));
+});
