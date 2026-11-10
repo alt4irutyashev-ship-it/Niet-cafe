@@ -197,7 +197,7 @@ const MARK=`<svg viewBox="0 0 34 34"><rect width="34" height="34" fill="#b5846a"
 ['#logo','#logo2'].forEach(s=>$(s).innerHTML=`<img src="logo.png" alt="" onerror="this.parentNode.innerHTML=MARK">`);
 let L=[],C=[],D=[],SV=null,loaded=false,cur='home';
 /* номер стола из NFC-ссылки guest.html?t=5 (помним 4 часа) */
-let TB=0;try{const u=+new URLSearchParams(location.search).get('t');if(u>0){TB=u;ls.set('gtb',{t:u,at:Date.now()})}else{const v=ls.get('gtb',null);if(v&&Date.now()-v.at<144e5)TB=v.t}}catch(e){}
+let TB=0;try{const sp=new URLSearchParams(location.search),u=sp.get('take')=='1'?100:+sp.get('t');if(u>0){TB=u;ls.set('gtb',{t:u,at:Date.now()})}else{const v=ls.get('gtb',null);if(v&&Date.now()-v.at<144e5)TB=v.t}}catch(e){}
 let SENT=ls.get('gsent',null);if(SENT&&Date.now()-SENT.at>108e5)SENT=null;
 function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3500)}
 const CD={};async function call(k){if(!TB)return;if(CD[k]&&Date.now()-CD[k]<12e4)return toast(t('wait'));const{error}=await sb.rpc('guest_call',{t:TB,k});if(error)return toast(t('noNet'));CD[k]=Date.now();toast(t(k=='bill'?'okB':'okW'))}
@@ -221,7 +221,7 @@ function ad(id,k){const n=(CART[id]||0)+k;if(n>0)CART[id]=n;else delete CART[id]
 /* главная */
 function href(k,u){u=(u||'').trim();if(k=='whatsapp'&&/^[+\d\s()-]+$/.test(u))return'https://wa.me/'+u.replace(/\D/g,'');return u}
 const lk=k=>{const l=L.find(x=>x.key==k);return l?href(k,l.url):''};
-function home(){$('#tblp').hidden=$('#callW').hidden=!TB;$('#tblp').textContent=t('tbl')+' '+TB;const g=lk('2gis');$('#m2gis').href=g||'#';$('#m2gis').style.visibility=g?'':'hidden';
+function home(){$('#tblp').hidden=!TB;$('#callW').hidden=!TB||TB==100;$('#tblp').textContent=TB==100?'🥡 С собой':t('tbl')+' '+TB;const g=lk('2gis');$('#m2gis').href=g||'#';$('#m2gis').style.visibility=g?'':'hidden';
  const ph=D.filter(d=>d.photo&&!d.stop),o=ph[Math.floor(Date.now()/864e5)%Math.max(1,ph.length)];$('#offW').hidden=!o;
  if(o)$('#offer').outerHTML=`<a class="offer" id="offer" href="#d/${o.id}"><div class="im">${pic(o)}</div><div class="bd"><div class="r"><div><b>${E(o.name)}</b>${o.descr?`<small>${E(o.descr)}</small>`:''}</div><span class="tagp">${M(o.price)}</span></div><span class="btn">${t('more')}</span></div></a>`;
  const so=['instagram','tiktok'].filter(lk);$('#socD').hidden=!so.length;$('#socD').style.gridTemplateColumns=`repeat(${so.length||1},1fr)`;
@@ -246,7 +246,7 @@ function sentH(){if(!SENT)return'';const st=SENT.st,k=st=='accepted'?['ok','accT
 function cartV(){const it=Object.entries(CART).map(([id,n])=>[dish(id),n]).filter(x=>x[0]);if(!it.length)return $('#cartL').innerHTML=SENT?sentH()+`<a class="btn" href="#menu" style="border-radius:999px;background:var(--acc)">${t('toMenu')}</a>`:emptyB(t('cartEb'),t('cartE'),BASKET);
  const sub=it.reduce((a,[d,n])=>a+d.price*n,0),sv=SV?Math.round(sub*SV/100):0;
  $('#cartL').innerHTML=sentH()+it.map(([d,n])=>`<div class="ci"><a class="im" href="#d/${d.id}">${pic(d)}</a><div class="tx"><b>${E(d.name)}</b><span class="pr">${M(d.price*n)}</span><div class="st"><button onclick="ad(${d.id},-1)" aria-label="−">−</button><span>${n} ${t('pcs')}</span><button onclick="ad(${d.id},1)" aria-label="+">+</button></div></div></div>`).join('')+
- `<div class="row2"><span>${t('sub')}</span><span>${M(sub)}</span></div>${SV?`<div class="row2"><span>${t('srv')} ${SV}%</span><span>${M(sv)}</span></div>`:''}<div class="row2 t"><span>${t('tot')}</span><span>${M(sub+sv)}</span></div>${TB?`<input class="cmt" id="cmt" placeholder="${t('cmt')}" maxlength="300"><button class="btn" id="sendB" onclick="sendOrder()">${t('send')} · ${t('tbl')} ${TB}</button>`:`<p class="hint">${t('show')}</p>`}<button class="clr" onclick="CART={};save();rerender()">${t('clr')}</button>`}
+ `<div class="row2"><span>${t('sub')}</span><span>${M(sub)}</span></div>${SV?`<div class="row2"><span>${t('srv')} ${SV}%</span><span>${M(sv)}</span></div>`:''}<div class="row2 t"><span>${t('tot')}</span><span>${M(sub+sv)}</span></div>${TB?`<input class="cmt" id="cmt" placeholder="${t('cmt')}" maxlength="300"><button class="btn" id="sendB" onclick="sendOrder()">${t('send')} · ${TB==100?'С собой':t('tbl')+' '+TB}</button>`:`<p class="hint">${t('show')}</p>`}<button class="clr" onclick="CART={};save();rerender()">${t('clr')}</button>`}
 
 /* блюдо */
 function dishV(id){const d=dish(id);if(!d)return location.hash='#menu';const f=FAV.includes(d.id),c=C.find(x=>x.id==d.cat_id);
@@ -268,7 +268,7 @@ function paintText(){document.documentElement.lang=LG=='kz'?'kk':'ru';$('#lang')
 function setLg(){LG=LG=='kz'?'ru':'kz';ls.set('glg',LG);paintText()}
 
 async function loadData(){try{const[c,d,s,l]=await Promise.all([sb.from('cats').select('*').order('id'),sb.from('dishes').select('id,cat_id,name,price,stop,descr,photo,weight,kcal,prot,fat,carb,allerg,tags').order('id'),sb.from('settings').select('val').eq('key','service'),sb.from('links').select('*').order('pos')]);
- L=l.data||[];SV=s.data&&s.data[0]?+s.data[0].val:null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;
+ L=l.data||[];SV=s.data&&s.data[0]?+s.data[0].val:null;if(TB==100)SV=null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;
  for(const k in CART)if(!dish(k)||dish(k).stop)delete CART[k];FAV=FAV.filter(x=>dish(x));save();route()}
  catch(e){$('#list').innerHTML=`<div class="empty"><p>${t('err')}</p></div>`}}
 save();paintText();route();loadData();

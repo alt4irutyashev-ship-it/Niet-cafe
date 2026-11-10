@@ -1,5 +1,5 @@
 /* Niet Café: работа без интернета. При изменении файлов сайта увеличьте номер версии. */
-const V = 'niet-v3';
+const V = 'niet-v4';
 const SHELL = ['./index.html', './guest.html', './manifest.json', './guest.webmanifest', './icon-192.png', './icon-512.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'];
 
