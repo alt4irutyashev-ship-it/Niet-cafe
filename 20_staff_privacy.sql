@@ -60,3 +60,6 @@ end $$;
 
 -- Проверка (необязательно): должно вернуть 0
 -- select count(*) from order_items where cost is not null;
+
+-- обновить кэш схемы API (иначе сайт может писать «Could not find a relationship …»)
+notify pgrst, 'reload schema';

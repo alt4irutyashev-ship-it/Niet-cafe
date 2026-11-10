@@ -327,3 +327,6 @@ create trigger recipes_nut_t after insert or update or delete on recipes for eac
 revoke execute on function recipes_nut() from public, anon;
 
 select dish_nutrition_refresh() as "Блюд заполнено";
+
+-- обновить кэш схемы API (иначе сайт может писать «Could not find a relationship …»)
+notify pgrst, 'reload schema';

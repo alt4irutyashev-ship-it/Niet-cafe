@@ -175,3 +175,6 @@ language sql stable security definer set search_path=public as $$
 $$;
 revoke execute on function market_prices() from public, anon;
 grant execute on function market_prices() to authenticated;
+
+-- обновить кэш схемы API (иначе сайт может писать «Could not find a relationship …»)
+notify pgrst, 'reload schema';
