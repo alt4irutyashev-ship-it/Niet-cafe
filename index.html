@@ -348,7 +348,7 @@ const c=supabase.createClient(URL_,KEY,{auth:{persistSession:false,autoRefreshTo
 await q(sb.from('profiles').update({role:$('#nr').value,name:nm}).eq('id',data.user.id));
 await sb.from('profiles').update({login:l}).eq('id',data.user.id);render()}
 async function sx(){const S=await q(sb.from('settings').select('*')),n={labor:'Персонал (ФОТ), в месяц',rent:'Аренда, в месяц',util:'Коммунальные, в месяц',portions:'План порций',service:'Обслуживание, %'};
-return`<div class="card">${S.map(x=>`<div class="row"><span style="width:200px">${n[x.key]||x.key}</span><input type="number" value="${x.val}" onchange="setv('${x.key}',this.value)"></div>`).join('')}</div>`}
+return`<div class="card">${S.filter(x=>!/^migr_/.test(x.key)).map(x=>`<div class="row"><span style="width:200px">${n[x.key]||x.key}</span><input type="number" value="${x.val}" onchange="setv('${x.key}',this.value)"></div>`).join('')}</div>`}
 const setv=async(k,v)=>{await q(sb.from('settings').update({val:+v}).eq('key',k));if(k=='service')SV=+v};
 init();
 if('serviceWorker' in navigator&&location.protocol=='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
