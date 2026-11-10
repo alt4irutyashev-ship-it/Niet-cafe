@@ -64,6 +64,12 @@ h4{margin:18px 2px 8px;font-size:13px;letter-spacing:.4px;text-transform:upperca
 .dh{border-bottom:1px solid #e6e1d8}
 .pbar{border-bottom:1px solid #ecd98a}
 @media(max-width:600px){table tbody{display:table;width:100%}}
+.srch{display:flex;gap:8px;margin:0 0 10px}.srch input{flex:1;height:44px;font-size:15px;border-radius:12px;padding:0 14px}.srch .btn{height:44px}
+.sub{border-bottom:1px solid var(--ln);margin-bottom:6px;gap:2px}.sub button{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:10px 14px;color:var(--mu);border-bottom:3px solid transparent!important}.sub button.on{color:var(--tx)!important;border-bottom-color:var(--g)!important;font-weight:700}
+.g2 .card.hi{background:var(--g2);border-color:var(--g)}.g2 .card.hi b{font-size:24px}
+.chip.bad{border-color:var(--rd);background:#fdeeed}
+.srch input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.g2 .card b.bad{color:var(--rd)}.g2 .card b.ok{color:var(--ok)}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Niet Staff"></head><body><div id="app"></div>
@@ -97,7 +103,7 @@ const KZ={'Официант':'Даяшы','Кухня':'Ас үй','Склад':
 'Отчёты':'Есептер','Меню':'Мәзір','Сотрудники':'Қызметкерлер','Затраты':'Шығындар',
 'Нет интернета — заказы сохраняются и отправятся сами':'Интернет жоқ — тапсырыстар сақталып, өздігінен жіберіледі','в очереди':'кезекте','не отправлено':'жіберілмеді','Нет связи. Попробуйте, когда появится интернет':'Байланыс жоқ. Интернет пайда болғанда қайталаңыз',
 'зовёт официанта':'даяшыны шақырады','просит счёт':'шот сұрайды','заказ с телефона':'телефоннан тапсырыс','Иду':'Барамын','Принять':'Қабылдау','Отклонить':'Бас тарту','зовёт':'шақырады','заказ':'тапсырыс','Заказ принят':'Тапсырыс қабылданды','Гостям':'Қонақтарға'};
-Object.assign(KZ,{'Включить уведомления':'Хабарландыруды қосу','Push включён':'Push қосылды','Уведомления не разрешены':'Хабарландыруға рұқсат берілмеді'});
+Object.assign(KZ,{'Поиск блюда':'Тағам іздеу','Ничего не найдено':'Ештеңе табылмады','Включить уведомления':'Хабарландыруды қосу','Push включён':'Push қосылды','Уведомления не разрешены':'Хабарландыруға рұқсат берілмеді'});
 const T=s=>LG=='kz'&&KZ[s]||s;
 function setLg(){LG=LG=='kz'?'ru':'kz';try{localStorage.setItem('lg',LG)}catch(e){}me&&me.role?render():login()}
 const lgB=()=>`<button class="btn o s" onclick="setLg()">${LG=='kz'?'РУС':'ҚАЗ'}</button>`;
@@ -110,6 +116,7 @@ const LOCN={s_main:'склад',s_kitchen:'кухня',s_bar:'бар'};
 const HALL=[[1,73,30,21,20],[2,74,64,21,20],[3,34,74,16,10],[4,34,58,16,10],[5,34,43,16,10],[6,34,27,16,10],[7,6,75,17,16],[8,6,53,17,16],[9,6,30,17,16]];
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let QUE=ls.get('que',[]),CACHE=ls.get('wcache',{busy:[],o:{}}),CALLS=[],GORD=[],LASTX='';
+let dq='',rt='ov',dsort='rv';
 let me=null,tab='',tbl=0,cat=0,dsel=0,per=1,D=[],C=[],ch=null,SV=10,mix=0,IT=[],invL='s_main';
 const NETERR=e=>!navigator.onLine||/fetch|network|load failed/i.test((e&&(e.message||e))||'');
 const q=async p=>{let r;try{r=await p}catch(e){e.net=1;throw e}if(r.error){if(NETERR(r.error)){r.error.net=1;throw r.error}alert(r.error.message);throw r.error}return r.data};
@@ -141,7 +148,14 @@ async function render(){const h={waiter:wv,kitchen:()=>kv('kitchen'),bar:()=>kv(
 addEventListener('online',()=>{flush();me&&me.role&&render()});addEventListener('offline',()=>{me&&me.role&&render()});
 async function flush(){if(!navigator.onLine||!QUE.length)return;const rest=[];for(const it of QUE){try{let o=await q(sb.from('orders').select('id').eq('tbl',it.tbl).eq('status','open').maybeSingle());if(!o)o=await q(sb.from('orders').insert({tbl:it.tbl}).select().single());await q(sb.from('order_items').insert({order_id:o.id,tbl:it.tbl,dish_id:it.dish_id,station:it.station,qty:it.qty||1,note:it.note||null}))}catch(e){rest.push(it)}}QUE=rest;ls.set('que',QUE);me&&me.role&&render()}
 setInterval(()=>{if(me&&['kitchen','bar'].includes(me.role)&&tab=='q')render()},60000);
-const chips=(a,f)=>`<div class="row">${a.map(c=>`<button class="chip ${cat==c.id?'on':''}" onclick="cat=${c.id};dsel=0;render()">${E(c.name)}</button>`).join('')}${f||''}</div>`;
+/* ---- поиск блюда (официант) ---- */
+const nz=x=>String(x||'').toLowerCase().replace(/ё/g,'е').trim();
+const dishRow=(d,sh)=>{const cn=sh?(C.find(c=>c.id==d.cat_id)||{}).name:'',lb=E(d.name)+(cn?` <small style="color:var(--mu)">${E(cn)}</small>`:'');return d.stop?`<div class="dh stop"><div>${lb}</div><span>${T('стоп')}</span></div>`:`<div class="dh" onclick="add(${d.id})"><div>${lb}</div><span>${M(d.price)}</span></div>`};
+const menuList=()=>{const k=nz(dq);if(!k){return D.filter(d=>d.cat_id==cat).map(d=>dishRow(d)).join('')}const r=D.filter(d=>nz(d.name).includes(k)||nz((C.find(c=>c.id==d.cat_id)||{}).name).includes(k));return r.length?r.map(d=>dishRow(d,1)).join(''):`<p style="padding:14px;color:var(--mu);margin:0">${T('Ничего не найдено')}</p>`};
+function dsearch(v){dq=v;const e=$('#dl');if(e)e.innerHTML=menuList();const x=$('#dqx');if(x)x.style.display=v?'':'none'}
+function dclear(){dq='';const i=$('#dq');if(i){i.value='';i.focus()}dsearch('')}
+const searchBox=()=>`<div class="srch"><input id="dq" type="search" inputmode="search" autocomplete="off" placeholder="🔍 ${T('Поиск блюда')}" value="${E(dq)}" oninput="dsearch(this.value)"><button id="dqx" class="btn o s" style="${dq?'':'display:none'}" onclick="dclear()">✕</button></div>`;
+const chips=(a,f)=>`<div class="row">${a.map(c=>`<button class="chip ${cat==c.id?'on':''}" onclick="cat=${c.id};dsel=0;dq='';render()">${E(c.name)}</button>`).join('')}${f||''}</div>`;
 
 /* ---- официант ---- */
 const ago=t=>{const m=Math.floor((Date.now()-new Date(t))/6e4);return m<1?'только что':m+' '+T('мин')};
@@ -155,9 +169,9 @@ async function wv(){let busy;try{busy=(await q(sb.from('orders').select('tbl').e
 busy=[...new Set([...busy,...QUE.map(x=>x.tbl)])];
 try{[CALLS,GORD]=await Promise.all([q(sb.from('calls').select('*').eq('done',false).order('created')),q(sb.from('guest_orders').select('*').eq('status','new').order('created'))])}catch(e){if(!e.net)throw e}
 const AT=[...CALLS.map(c=>c.tbl),...GORD.map(g=>g.tbl)],alH=alertsH();
-if(!tbl)return alH+`<div class="hall"><div class="door"></div><div class="wall"></div><div class="dl">${T('вход')}</div>${HALL.map(([n,x,y,w,h])=>`<div class="tbl ${busy.includes(n)?'bz':''} ${AT.includes(n)?'call':''}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%" onclick="tbl=${n};mix=0;render()">${n}<small>${AT.includes(n)?(GORD.some(g=>g.tbl==n)?T('заказ'):T('зовёт')):busy.includes(n)?T('занят'):''}</small></div>`).join('')}</div>`;
+if(!tbl)return alH+`<div class="hall"><div class="door"></div><div class="wall"></div><div class="dl">${T('вход')}</div>${HALL.map(([n,x,y,w,h])=>`<div class="tbl ${busy.includes(n)?'bz':''} ${AT.includes(n)?'call':''}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%" onclick="tbl=${n};mix=0;dq='';render()">${n}<small>${AT.includes(n)?(GORD.some(g=>g.tbl==n)?T('заказ'):T('зовёт')):busy.includes(n)?T('занят'):''}</small></div>`).join('')}</div>`;
 let o;try{o=await q(sb.from('orders').select('*,order_items(*)').eq('tbl',tbl).eq('status','open').maybeSingle());CACHE.o[tbl]=o;ls.set('wcache',CACHE)}catch(e){if(!e.net)throw e;o=CACHE.o[tbl]}IT=o?o.order_items.sort((a,b)=>a.id-b.id):[];const PQ=QUE.filter(x=>x.tbl==tbl);const{sub,sv,tot}=sums([...IT,...PQ]);
-const menu=chips(C)+'<div class="list">'+D.filter(d=>d.cat_id==cat).map(d=>d.stop?`<div class="dh stop">${E(d.name)}<span>${T('стоп')}</span></div>`:`<div class="dh" onclick="add(${d.id})">${E(d.name)}<span>${M(d.price)}</span></div>`).join('')+'</div>';
+const menu=searchBox()+chips(C)+`<div class="list" id="dl">${menuList()}</div>`;
 const lst=PQ.map(i=>`<div class="dh pend"><div>${i.qty||1}× ${E(dn(i.dish_id))} <small>⏳ ${T('не отправлено')}</small></div></div>`).join('')+IT.map(i=>`<div class="dh" onclick="nt(${i.id})"><div>${i.qty}× ${E(dn(i.dish_id))} <small>${T(SN[i.status]||'')}</small>${i.note?`<span class="note">${E(i.note)}</span>`:''}</div>${i.status=='new'?`<button class="btn r s" onclick="event.stopPropagation();del(${i.id})">×</button>`:''}</div>`).join('')||(PQ.length?'':T('Пусто'));
 const payH=IT.length||PQ.length?`<p><small>${T('Нажмите на блюдо в заказе, чтобы добавить комментарий')}</small></p><p>${T('Сумма')}: ${M(sub)}<br>${T('Обслуживание')} ${SV}%: ${M(sv)}</p><h4>${T('Итого')}: ${M(tot)}</h4>
 <div class="row"><button class="btn o s" onclick="prn()">${T('Пречек')}</button><button class="btn o s" onclick="mvT()">${T('Перенести стол')}</button></div>
@@ -186,7 +200,8 @@ tbl=n;render()}
 async function kv(s){const h=tabs([['q','Заказы'],['tk','Техкарты'],['sl','Стоп-лист']],'q');return h+await({q:()=>qv(s),tk:()=>tkv(s),sl:()=>slv(s)})[tab]()}
 async function qv(s){const r=await q(sb.from('order_items').select('*').eq('station',s).in('status',['new','cooking']).order('created'));if(!r.length)return`<p>${T('Заказов нет')}</p>`;
 const g={};r.forEach(i=>(g[i.order_id]=g[i.order_id]||[]).push(i));
-return`<div class="kq">${Object.values(g).map(a=>{const t0=new Date(a[0].created),mn=Math.floor((Date.now()-t0)/6e4);return`<div class="card tk ${mn>=15?'late':''}"><b style="font-size:20px">${T('Стол')} ${a[0].tbl}</b> <small class="${mn>=15?'bad':''}">${t0.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})} · ${mn} ${T('мин')}</small>${a.map(i=>`<div class="it ${i.status=='cooking'?'cook':''}"><div><b>${i.qty}× ${E(dn(i.dish_id))}</b>${i.note?`<span class="note">${E(i.note)}</span>`:''}<small>${T(SN[i.status])}</small></div><div class="row" style="margin:0;flex-wrap:nowrap">${i.status=='new'?`<button class="btn o" onclick="st(${i.id},'cooking')">${T('Готовится')}</button>`:''}<button class="btn" onclick="st(${i.id},'ready')">${T('Готово')}</button></div></div>`).join('')}</div>`}).join('')}</div>`}
+const late=Object.values(g).filter(a=>Math.floor((Date.now()-new Date(a[0].created))/6e4)>=15).length;
+return`<div class="row"><span class="chip">${T('Заказов')}: ${Object.keys(g).length}</span><span class="chip">${T('Позиций')}: ${r.length}</span>${late?`<span class="chip bad">${T('Просрочено')}: ${late}</span>`:''}</div><div class="kq">${Object.values(g).map(a=>{const t0=new Date(a[0].created),mn=Math.floor((Date.now()-t0)/6e4);return`<div class="card tk ${mn>=15?'late':''}"><b style="font-size:20px">${T('Стол')} ${a[0].tbl}</b> <small class="${mn>=15?'bad':''}">${t0.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})} · ${mn} ${T('мин')}</small>${a.map(i=>`<div class="it ${i.status=='cooking'?'cook':''}"><div><b>${i.qty}× ${E(dn(i.dish_id))}</b>${i.note?`<span class="note">${E(i.note)}</span>`:''}<small>${T(SN[i.status])}</small></div><div class="row" style="margin:0;flex-wrap:nowrap">${i.status=='new'?`<button class="btn o" onclick="st(${i.id},'cooking')">${T('Готовится')}</button>`:''}<button class="btn" onclick="st(${i.id},'ready')">${T('Готово')}</button></div></div>`).join('')}</div>`}).join('')}</div>`}
 const st=async(id,s)=>{await q(sb.from('order_items').update({status:s}).eq('id',id));render()};
 async function slv(s){const f=d=>d.station==s,h=catRow(f);return h+`<p><small>${T('Отмеченные блюда официант не сможет добавить в заказ')}</small></p><div class="card">${D.filter(d=>d.cat_id==cat&&f(d)).map(d=>`<label class="dh"><div>${E(d.name)}</div><div class="${d.stop?'bad':''}">${T('стоп')} <input type="checkbox" ${d.stop?'checked':''} onchange="setStop(${d.id},this.checked)"></div></label>`).join('')}</div>`}
 const setStop=async(id,v)=>{await q(sb.rpc('set_stop',{d:id,s:v}));await loadD();render()};
@@ -250,13 +265,22 @@ O.forEach(o=>{let os=0;o.order_items.forEach(i=>{const d=D.find(x=>x.id==i.dish_
  const w=W[o.waiter]||(W[o.waiter]={n:(UP.find(u=>u.id==o.waiter)||{}).name||'—',c:0,s:0});w.c++;w.s+=os+sv;
  const t=new Date(o.closed);HR[t.getHours()]+=os;WD[(t.getDay()+6)%7]+=os});
 const days=per||Math.max(1,Math.ceil((Date.now()-Math.min(Date.now(),...O.map(o=>+new Date(o.closed))))/864e5)),fx=(s.labor+s.rent+s.util)/30*days,np=rev+svc-cg-fx,LW=P.filter(low);
-return`<div class="row">${[[1,'Сегодня'],[7,'7 дней'],[30,'30 дней'],[0,'Всё время']].map(([k,n])=>`<button class="chip ${per==k?'on':''}" onclick="per=${k};render()">${n}</button>`).join('')}</div>
-${LW.length?`<div class="card" style="border-color:var(--rd)"><b class="bad">⚠ ${T('Заканчивается')}:</b> ${LW.map(p=>`${E(p.name)} (${+(+p.s_main+ +p.s_kitchen+ +p.s_bar).toFixed(2)} ${E(p.unit)})`).join(', ')}</div>`:''}
-<div class="g2"><div class="card">Выручка (блюда)<br><b>${M(rev)}</b></div><div class="card">Обслуживание<br><b>${M(svc)}</b></div><div class="card">Продукты<br><b>${M(cg)}</b></div><div class="card">Валовая прибыль<br><b>${M(rev+svc-cg)}</b></div><div class="card">Постоянные затраты (${days} дн.)<br><b>${M(fx)}</b></div><div class="card">Итоговая прибыль<br><b class="${np<0?'bad':'ok'}">${M(np)}</b></div><div class="card">Чеков<br><b>${O.length}</b></div><div class="card">Средний чек<br><b>${M(O.length?(rev+svc)/O.length:0)}</b></div></div>
-<div class="card"><b>Оплаты:</b> наличные ${M(pc)} · карта ${M(pk)} · Kaspi ${M(pq)}</div>
-<h4>Блюда</h4><table><tr><th>Блюдо</th><th>Порций</th><th>Выручка</th><th>Продукты</th><th>Прибыль</th></tr>${Object.values(m).sort((a,b)=>b.rv-a.rv).map(r=>`<tr><td>${E(r.n)}</td><td>${r.q}</td><td>${M(r.rv)}</td><td>${M(r.c)}</td><td>${M(r.rv-r.c)}</td></tr>`).join('')||'<tr><td colspan="5">Нет закрытых заказов</td></tr>'}</table>
-<h4>Официанты</h4><table><tr><th>Официант</th><th>Чеков</th><th>Сумма</th><th>Средний чек</th></tr>${Object.values(W).sort((a,b)=>b.s-a.s).map(w=>`<tr><td>${E(w.n)}</td><td>${w.c}</td><td>${M(w.s)}</td><td>${M(w.s/w.c)}</td></tr>`).join('')||'<tr><td colspan="4">—</td></tr>'}</table>
-${O.length?`<div class="two"><div class="card"><b>По часам</b>${bars(HR.map((v,i)=>[i,v]).filter(x=>x[1]>0),h=>h+':00')}</div><div class="card"><b>По дням недели</b>${bars(WD.map((v,i)=>[i,v]),i=>['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][i])}</div></div>`:''}`}
+const pt=pc+pk+pq||1,pp=v=>Math.round(v/pt*100),fc=rev?Math.round(cg/rev*100):0,gp=rev+svc-cg,
+ cardS=(l,v,x,c)=>`<div class="card ${x||''}">${l}<br><b class="${c||''}">${v}</b></div>`,
+ PER=`<div class="row">${[[1,'Сегодня'],[7,'7 дней'],[30,'30 дней'],[0,'Всё время']].map(([k,n])=>`<button class="chip ${per==k?'on':''}" onclick="per=${k};render()">${n}</button>`).join('')}</div>`,
+ WARN=LW.length?`<div class="card" style="border-color:var(--rd)"><b class="bad">⚠ ${T('Заканчивается')}:</b> ${LW.map(p=>`${E(p.name)} (${+(+p.s_main+ +p.s_kitchen+ +p.s_bar).toFixed(2)} ${E(p.unit)})`).join(', ')}</div>`:'',
+ SUB=`<div class="row tb sub">${[['ov','Обзор'],['dd','Блюда'],['st','Команда'],['tm','Время']].map(([k,n])=>`<button class="${rt==k?'on':''}" onclick="rt='${k}';render()">${n}</button>`).join('')}</div>`,
+ EMPTY='<div class="card">Нет закрытых заказов за выбранный период</div>';
+let B='';
+if(rt=='ov')B=`<h4>Выручка</h4><div class="g2">${cardS('Выручка (блюда)',M(rev))}${cardS('Обслуживание',M(svc))}${cardS('Чеков',O.length)}${cardS('Средний чек',M(O.length?(rev+svc)/O.length:0))}</div>
+<h4>Затраты и прибыль</h4><div class="g2">${cardS('Продукты',M(cg))}${cardS('Фудкост',fc+'%',0,fc>40?'bad':'')}${cardS('Постоянные затраты ('+days+' дн.)',M(fx))}${cardS('Валовая прибыль',M(gp))}${cardS('Итоговая прибыль',M(np),'hi',np<0?'bad':'ok')}</div>
+<h4>Оплаты</h4><div class="g2">${cardS('Наличные · '+pp(pc)+'%',M(pc))}${cardS('Карта · '+pp(pk)+'%',M(pk))}${cardS('Kaspi · '+pp(pq)+'%',M(pq))}</div>`;
+if(rt=='dd'){const R=Object.values(m).map(r=>({...r,p:r.rv-r.c,f:r.rv?Math.round(r.c/r.rv*100):0})).sort((a,b)=>dsort=='q'?b.q-a.q:dsort=='p'?b.p-a.p:b.rv-a.rv);
+ B=`<div class="row">${[['rv','По выручке'],['q','По порциям'],['p','По прибыли']].map(([k,n])=>`<button class="chip ${dsort==k?'on':''}" onclick="dsort='${k}';render()">${n}</button>`).join('')}</div>`+(R.length?`<table><tr><th>Блюдо</th><th>Порц.</th><th>Выручка</th><th>Прибыль</th><th>Фудкост</th></tr>${R.map(r=>`<tr><td>${E(r.n)}</td><td>${r.q}</td><td>${M(r.rv)}</td><td>${M(r.p)}</td><td class="${r.f>40?'bad':''}">${r.f}%</td></tr>`).join('')}</table>`:EMPTY)}
+if(rt=='st'){const TW=Object.values(W).reduce((a,w)=>a+w.s,0)||1;
+ B=Object.keys(W).length?`<table><tr><th>Официант</th><th>Чеков</th><th>Сумма</th><th>Средний чек</th><th>Доля</th></tr>${Object.values(W).sort((a,b)=>b.s-a.s).map(w=>`<tr><td>${E(w.n)}</td><td>${w.c}</td><td>${M(w.s)}</td><td>${M(w.s/w.c)}</td><td>${Math.round(w.s/TW*100)}%</td></tr>`).join('')}</table>`:EMPTY}
+if(rt=='tm')B=O.length?`<div class="two"><div class="card"><b>По часам</b>${bars(HR.map((v,i)=>[i,v]).filter(x=>x[1]>0),h=>h+':00')}</div><div class="card"><b>По дням недели</b>${bars(WD.map((v,i)=>[i,v]),i=>['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][i])}</div></div>`:EMPTY;
+return PER+WARN+SUB+B}
 async function ors(){const O=await q(sb.from('orders').select('*,order_items(dish_id,qty)').order('id',{ascending:false}).limit(40)),PN={cash:'нал',card:'карта',kaspi:'Kaspi',mix:'смешанная'};
 return`<table><tr><th>№</th><th>Стол</th><th>Статус</th><th>Сумма</th></tr>${O.map(o=>`<tr><td>${o.id}</td><td>${o.tbl}</td><td>${o.status=='closed'?'закрыт · '+(PN[o.pay]||o.pay||''):'открыт'}</td><td>${M(+o.total||o.order_items.reduce((a,i)=>a+i.qty*dp(i.dish_id),0))}</td></tr>`).join('')}</table>`}
 async function mnv(){if(!C.some(c=>c.id==cat))cat=C[0]?C[0].id:0;const so=(v,a)=>[['kitchen','Кухня'],['bar','Бар']].map(([k,n])=>`<option value="${k}" ${v==k?'selected':''}>${n}</option>`).join('');
