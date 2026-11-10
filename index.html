@@ -42,7 +42,7 @@ h3{margin:12px 0;font-size:18px}h4{margin:12px 0;font-size:15px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ВСТАВЬТЕ СВОИ ДАННЫЕ из Supabase: Project Settings -> API (Project URL и anon public key) */
-const URL_='https://YOUR-PROJECT.supabase.co',KEY='YOUR-ANON-KEY';
+const URL_='https://iamomamsltqfpeljahuy.supabase.co',KEY='sb_publishable_4l_mW-_FDstSX2IhEtjvSQ_kf0rr55J';
 const sb=supabase.createClient(URL_,KEY),$=s=>document.querySelector(s),M=n=>Math.round(n||0).toLocaleString('ru-RU')+' ₸';
 const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* ---- язык ---- */
@@ -80,7 +80,7 @@ const tabs=(a,d)=>{tab=tab||d;return`<div class="row tb">${a.map(([k,n])=>`<butt
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}setTimeout(()=>d.remove(),5000)}
 const sums=it=>{const sub=it.reduce((a,i)=>a+i.qty*dp(i.dish_id),0),sv=Math.round(sub*SV/100);return{sub,sv,tot:sub+sv}};
 function login(){$('#app').innerHTML=`<div class="lg"><div style="justify-self:end">${lgB()}</div><span class="lo">${LOGO}</span><h2>Niet Café</h2><input id="u" placeholder="${T('Логин')}" autocapitalize="off"><input id="p" type="password" placeholder="${T('Пароль')}" onkeydown="event.key=='Enter'&&go()"><button class="btn" onclick="go()">${T('Войти')}</button><p id="er" class="bad"></p></div>`}
-async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase()+'@niet.cafe',password:$('#p').value});if(error)return $('#er').textContent=T('Неверный логин или пароль');init()}
+async function go(){const{error}=await sb.auth.signInWithPassword({email:$('#u').value.trim().toLowerCase()+'@niet.cafe',password:$('#p').value});if(error){console.error(error);const m=error.message||'';return $('#er').textContent=/invalid login/i.test(m)?T('Неверный логин или пароль'):m}init()}
 async function out(){await sb.auth.signOut();me=null;login()}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(!session)return login();
 const{data}=await sb.from('profiles').select('*').eq('id',session.user.id).single();me=data;tab='';tbl=0;
