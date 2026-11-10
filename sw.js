@@ -1,6 +1,6 @@
 /* Niet Café: работа без интернета. При изменении файлов сайта увеличьте номер версии. */
-const V = 'niet-v5';
-const SHELL = ['./index.html', './guest.html', './manifest.json', './guest.webmanifest', './icon-192.png', './icon-512.png',
+const V = 'niet-v7';
+const SHELL = ['./index.html', './guest.html', './order.html', './manifest.json', './guest.webmanifest', './icon-192.png', './icon-512.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'];
 
 self.addEventListener('install', e => {

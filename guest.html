@@ -123,6 +123,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;border:0;
 .cmt{width:100%;height:46px;border:0;border-radius:14px;background:var(--card);padding:0 14px;font:inherit;font-size:13px;margin-top:8px;color:var(--ink)}.cmt:focus{outline:2px solid var(--acc2)}
 .sent{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;display:flex;gap:12px;align-items:center;font-size:13px}.sent svg{width:26px;height:26px;flex:none;color:var(--acc)}.sent b{display:block;font-size:14px}.sent.ok svg{color:#5b6640}.sent.no svg{color:#c4554f}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.kc{display:block;padding:2px 10px 0;font-size:11px;color:var(--mute)}.apx{display:block;margin:8px auto 0;font-size:11px;color:var(--mute);max-width:30em}.outb{display:block;margin-top:10px;padding:14px 16px;border-radius:16px;background:var(--card);border:1px solid var(--acc2)}.outb b{display:block;font-size:14px}.outb span{display:block;margin-top:3px;font-size:12px;color:var(--mute)}.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border-radius:14px;padding:5px;margin-top:8px}.seg button{height:42px;border-radius:10px;font-weight:600;font-size:13.5px;color:var(--mute)}.seg button.on{background:var(--acc);color:#fff}.oform{margin-top:4px}.oerr{color:#c4554f;font-size:12.5px;min-height:1em;margin:6px 4px 0}.algw{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px}.algw>small{color:var(--mute);font-size:11.5px}.algb{height:28px;padding:0 11px;border-radius:9px;background:var(--card);font-size:12px;font-weight:600}.algb.on{background:#c4554f;color:#fff}.algp{flex-basis:100%;background:var(--card);border-radius:14px;padding:10px 12px}.algp small{color:var(--mute);font-size:11.5px}.algp div{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.algp div button{height:30px;padding:0 11px;border-radius:9px;background:var(--chip);font-size:12.5px}.algp div button.on{background:#c4554f;color:#fff}.algr{margin-top:8px;font-size:12px;color:#c4554f}
 </style></head><body>
 <div class="app">
  <!-- главная -->
@@ -133,6 +134,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;border:0;
    <a class="mini" id="m2gis" href="#" target="_blank" rel="noopener"><small data-t="rev">Ваш отзыв</small><b>2ГИС</b><div class="ft"><span data-t="revS">Оцените нас</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></div></a>
   </div>
   <div class="cl2" id="callW" hidden><button class="cbtn d" id="cw" onclick="call('waiter')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17h12M7 17a5 5 0 0 1 10 0M12 9V7M10 7h4M4 20h16"/></svg><span data-t="callW">Позвать официанта</span></button><button class="cbtn" id="cb" onclick="call('bill')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span data-t="callB">Попросить счёт</span></button></div>
+  <div id="outW" hidden></div>
   <div id="offW" hidden><div class="lbl" data-t="rec">Советуем попробовать</div><a class="offer" id="offer"></a></div>
   <div class="duo" id="socD" style="margin-top:10px"></div>
   <div class="list" id="rows"></div>
@@ -144,6 +146,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;border:0;
    <div class="top" style="margin:0 0 10px"><span class="pill"><span class="logo" id="logo2"></span>Niet Café</span><span style="flex:1"></span><button class="cb" onclick="toggleS()" aria-label="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></button></div>
    <div class="srch" id="srchW" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><input id="q" type="search" oninput="paintMenu()" autocomplete="off"></div>
    <div class="chips" id="cats"></div>
+   <div id="algW" class="algw"></div>
   </div>
   <div id="list"></div><p class="note" id="note"></p>
  </section>
@@ -178,7 +181,7 @@ const TX={ru:{hi:'Добро пожаловать!',our:'Наше меню',open
  instagram:['Instagram','Фото и новости'],tiktok:['TikTok','Видео из кафе'],whatsapp:'Забронировать стол',book:'WhatsApp',
  tbl:'Стол',callW:'Позвать официанта',callB:'Попросить счёт',okW:'Официант скоро подойдёт',okB:'Официант принесёт счёт',wait:'Уже позвали, официант идёт',noNet:'Нет интернета. Попробуйте ещё раз',
  send:'Отправить заказ официанту',cmt:'Комментарий: без лука, острее…',sentT:'Заказ отправлен',sentW:'Официант скоро подтвердит его',accT:'Заказ принят',accW:'Блюда уже готовятся',rejT:'Официант не принял заказ',rejW:'Позовите официанта, он уточнит детали',
- g:'вес, г',kcal:'ккал',p:'белки',f:'жиры',c:'углеводы',alg:'Аллергены',new:'Новинка',hit:'Хит',spicy:'Острое'},
+ g:'вес, г',kcal:'ккал',p:'белки',f:'жиры',c:'углеводы',alg:'Аллергены',approx:'КБЖУ на порцию, значения ориентировочные. При аллергии уточните у официанта.',kc:'ккал',out:'Доставка и самовывоз',how:'Как получить заказ',pick:'Самовывоз',dlv:'Доставка',free:'бесплатно',from:'от',toFree:'До бесплатной доставки ещё',nm:'Ваше имя',ph:'Телефон: +7 7XX XXX XX XX',ad:'Адрес: улица, дом, квартира, подъезд',sendOut:'Отправить заказ',needPhone:'Укажите номер телефона',needAddr:'Укажите адрес доставки',outHint:'Оплата при получении: наличные, карта или Kaspi. Мы позвоним, чтобы подтвердить заказ.',pickHint:'Заберите заказ в кафе — мы позвоним, когда он будет готов.',outCard:'Доставка и с собой',outCardS:'Закажите домой или заберите сами',ordNo:'Заказ №',algF:'Аллергены',algT:'Скрыть блюда, в которых есть:',algAll:'Сбросить',algHid:'скрыто блюд',new:'Новинка',hit:'Хит',spicy:'Острое'},
  kz:{hi:'Қош келдіңіз!',our:'Біздің мәзір',openS:'Ашу',look:'Тағамдар мен сусындар',rev:'Сіздің пікіріңіз',revS:'Бізді бағалаңыз',rec:'Татып көріңіз',more:'Толығырақ',
  t1:'Басты',t2:'Мәзір',t3:'Таңдаулы',t4:'Таңдауым',fav:'Таңдаулы',cart:'Менің таңдауым',search:'Тағам іздеу',none:'Ештеңе табылмады',off:'қазір жоқ',note:'Бағалар теңгемен. Қызмет көрсету',load:'Мәзір жүктелуде…',err:'Мәзір жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз.',
  add:'Қосу',added:'Қосылды',favEb:'Таңдаулыда әзірге ештеңе жоқ',favE:'Тағамды сақтау үшін ♡ басыңыз',cartEb:'Сіз әлі ештеңе таңдамадыңыз',cartE:'Тапсырысты осында жинап, даяшыға көрсетіңіз',toMenu:'Мәзірге өту',
@@ -186,7 +189,7 @@ const TX={ru:{hi:'Добро пожаловать!',our:'Наше меню',open
  instagram:['Instagram','Суреттер мен жаңалықтар'],tiktok:['TikTok','Кафеден бейнелер'],whatsapp:'Үстел брондау',book:'WhatsApp',
  tbl:'Үстел',callW:'Даяшыны шақыру',callB:'Шотты сұрау',okW:'Даяшы жақында келеді',okB:'Даяшы шотты әкеледі',wait:'Шақырылды, даяшы келе жатыр',noNet:'Интернет жоқ. Қайта көріңіз',
  send:'Тапсырысты даяшыға жіберу',cmt:'Түсініктеме: пиязсыз, ащырақ…',sentT:'Тапсырыс жіберілді',sentW:'Даяшы жақында растайды',accT:'Тапсырыс қабылданды',accW:'Тағамдар дайындалуда',rejT:'Даяшы тапсырысты қабылдамады',rejW:'Даяшыны шақырыңыз, ол нақтылайды',
- g:'салмағы, г',kcal:'ккал',p:'ақуыз',f:'май',c:'көмірсу',alg:'Аллергендер',new:'Жаңа',hit:'Хит',spicy:'Ащы'}};
+ g:'салмағы, г',kcal:'ккал',p:'ақуыз',f:'май',c:'көмірсу',alg:'Аллергендер',approx:'Бір порцияның КБЖУ мәні шамамен берілген. Аллергияңыз болса, даяшыдан нақтылаңыз.',kc:'ккал',out:'Жеткізу және өзі алып кету',how:'Тапсырысты қалай алу',pick:'Өзі алып кету',dlv:'Жеткізу',free:'тегін',from:'бастап',toFree:'Тегін жеткізуге дейін',nm:'Атыңыз',ph:'Телефон: +7 7XX XXX XX XX',ad:'Мекенжай: көше, үй, пәтер, кіреберіс',sendOut:'Тапсырысты жіберу',needPhone:'Телефон нөмірін көрсетіңіз',needAddr:'Жеткізу мекенжайын көрсетіңіз',outHint:'Төлем алған кезде: қолма-қол, карта немесе Kaspi. Тапсырысты растау үшін хабарласамыз.',pickHint:'Тапсырысты кафеден алыңыз — дайын болғанда хабарласамыз.',outCard:'Жеткізу және алып кету',outCardS:'Үйге тапсырыс беріңіз немесе өзіңіз алыңыз',ordNo:'Тапсырыс №',algF:'Аллергендер',algT:'Құрамында мыналар бар тағамдарды жасыру:',algAll:'Тазалау',algHid:'тағам жасырылды',new:'Жаңа',hit:'Хит',spicy:'Ащы'}};
 const t=k=>TX[LG][k];
 const I=(p,w,fill)=>`<svg viewBox="0 0 24 24" fill="${fill||'none'}" stroke="currentColor" stroke-width="${w||1.6}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const HEART='<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>';
@@ -198,6 +201,12 @@ const MARK=`<svg viewBox="0 0 34 34"><rect width="34" height="34" fill="#b5846a"
 let L=[],C=[],D=[],SV=null,loaded=false,cur='home';
 /* номер стола из NFC-ссылки guest.html?t=5 (помним 4 часа) */
 let TB=0;try{const sp=new URLSearchParams(location.search),u=sp.get('take')=='1'?100:+sp.get('t');if(u>0){TB=u;ls.set('gtb',{t:u,at:Date.now()})}else{const v=ls.get('gtb',null);if(v&&Date.now()-v.at<144e5)TB=v.t}}catch(e){}
+const OUT=TB==100;let DFEE=990,DFREE=5000,OK=ls.get('gok','delivery'),OF=ls.get('gprof',{nm:'',ph:'',ad:''}),OCM='';
+const ALG=['глютен','молоко','яйца','рыба','ракообразные','соя','кунжут','орехи','арахис'];let ALX=ls.get('galx',[]),ALO=false;
+const hasAlg=d=>ALX.length&&(d.allerg||'').split(',').map(x=>x.trim()).some(x=>ALX.includes(x));
+function setOK(k){OK=k;ls.set('gok',k);rerender()}
+function ofIn(k,v){OF[k]=v;ls.set('gprof',OF);if(k=='ph'||k=='ad'){const e=$('#oerr');if(e)e.textContent=''}}
+function algT(a){ALX=ALX.includes(a)?ALX.filter(x=>x!=a):[...ALX,a];ls.set('galx',ALX);paintMenu()}
 let SENT=ls.get('gsent',null);if(SENT&&Date.now()-SENT.at>108e5)SENT=null;
 function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3500)}
 const CD={};async function call(k){if(!TB)return;if(CD[k]&&Date.now()-CD[k]<12e4)return toast(t('wait'));const{error}=await sb.rpc('guest_call',{t:TB,k});if(error)return toast(t('noNet'));CD[k]=Date.now();toast(t(k=='bill'?'okB':'okW'))}
@@ -205,6 +214,12 @@ let SKEY='',SSIG='',SBUSY=0;
 async function sendOrder(){if(SBUSY)return;const its=Object.entries(CART).map(([id,n])=>({dish_id:+id,qty:n}));if(!its.length)return;const note=($('#cmt').value||'').trim(),sig=JSON.stringify(its)+'|'+note;if(sig!=SSIG||!SKEY){SSIG=sig;SKEY=(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2))}SBUSY=1;const b=$('#sendB');b.disabled=true;
  const{data,error}=await sb.rpc('guest_order',{t:TB,its,n:note,k:SKEY});SBUSY=0;b.disabled=false;if(error)return toast(t('noNet'));SKEY='';SSIG='';
  SENT={id:data,at:Date.now(),st:'new'};ls.set('gsent',SENT);CART={};save();rerender()}
+async function sendOut(){if(SBUSY)return;const its=Object.entries(CART).map(([id,n])=>({dish_id:+id,qty:n}));if(!its.length)return;const er=$('#oerr'),dg=(OF.ph||'').replace(/\D/g,'');
+ if(dg.length<10||dg.length>11){er.textContent=t('needPhone');$('#oph').focus();return}if(OK=='delivery'&&(OF.ad||'').trim().length<5){er.textContent=t('needAddr');$('#oad').focus();return}
+ const sig=JSON.stringify(its)+'|'+OK+'|'+dg+'|'+OF.ad+'|'+OCM;if(sig!=SSIG||!SKEY){SSIG=sig;SKEY=(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2))}
+ SBUSY=1;const b=$('#sendB');b.disabled=true;const{data,error}=await sb.rpc('remote_order',{p_items:its,p_kind:OK,p_phone:OF.ph,p_address:OK=='delivery'?OF.ad:null,p_name:OF.nm||null,p_note:OCM||null,p_token:SKEY});SBUSY=0;b.disabled=false;
+ if(error){er.textContent=/fetch|network|Failed/i.test(error.message||'')?t('noNet'):(error.message||t('noNet'));return}SKEY='';SSIG='';OCM='';
+ SENT={id:data.id,at:Date.now(),st:'new',out:OK,sum:data.sum,fee:data.fee};ls.set('gsent',SENT);CART={};save();rerender();scrollTo(0,0)}
 async function poll(){if(!SENT||cur!='cart')return;const{data}=await sb.rpc('guest_order_status',{i:SENT.id});if(data&&data!=SENT.st){SENT.st=data;ls.set('gsent',SENT);rerender()}}
 setInterval(poll,15000);
 const TAGS=d=>(d.tags||'').split(',').map(x=>x.trim()).filter(x=>['new','hit','spicy'].includes(x));
@@ -214,14 +229,14 @@ const pic=d=>d&&d.photo?`<img src="${E(d.photo)}" alt="" loading="lazy">`:`<div 
 const save=()=>{ls.set('gfav',FAV);ls.set('gcart',CART);const n=Object.values(CART).reduce((a,b)=>a+b,0);$('#bd').hidden=!n;$('#bd').textContent=n};
 const hb=d=>{const f=FAV.includes(d.id);return`<button class="hrt ${f?'on':''}" onclick="tf(${d.id})" aria-label="Избранное">${I(HEART,1.7,f?'currentColor':'none')}</button>`};
 
-function card(d){const n=CART[d.id]||0;return`<div class="dc ${d.stop?'off':''}"><a class="im" href="#d/${d.id}">${pic(d)}${TAGS(d).length?`<span class="tags">${tagH(d)}</span>`:''}</a>${hb(d)}<a class="nm" href="#d/${d.id}">${E(d.name)}${d.descr?', '+E(d.descr.toLowerCase()):''}</a><div class="bt"><span class="pr">${d.stop?t('off'):M(d.price)}</span>${d.stop?'':`<button class="add ${n?'in':''}" onclick="ad(${d.id},1)" aria-label="${t('add')}">${n?n:I('<path d="M12 5v14M5 12h14"/>',2.2)}</button>`}</div></div>`}
+function card(d){const n=CART[d.id]||0;return`<div class="dc ${d.stop?'off':''}"><a class="im" href="#d/${d.id}">${pic(d)}${TAGS(d).length?`<span class="tags">${tagH(d)}</span>`:''}</a>${hb(d)}<a class="nm" href="#d/${d.id}">${E(d.name)}${d.descr?', '+E(d.descr.toLowerCase()):''}</a>${d.kcal?`<small class="kc">≈ ${d.kcal} ${t('kc')}${d.weight?' · '+d.weight+(d.cat_id==15||d.cat_id==16?' мл':' г'):''}</small>`:''}<div class="bt"><span class="pr">${d.stop?t('off'):M(d.price)}</span>${d.stop?'':`<button class="add ${n?'in':''}" onclick="ad(${d.id},1)" aria-label="${t('add')}">${n?n:I('<path d="M12 5v14M5 12h14"/>',2.2)}</button>`}</div></div>`}
 function tf(id){FAV=FAV.includes(id)?FAV.filter(x=>x!=id):[...FAV,id];save();rerender()}
 function ad(id,k){const n=(CART[id]||0)+k;if(n>0)CART[id]=n;else delete CART[id];save();rerender()}
 
 /* главная */
 function href(k,u){u=(u||'').trim();if(k=='whatsapp'&&/^[+\d\s()-]+$/.test(u))return'https://wa.me/'+u.replace(/\D/g,'');return u}
 const lk=k=>{const l=L.find(x=>x.key==k);return l?href(k,l.url):''};
-function home(){$('#tblp').hidden=!TB;$('#callW').hidden=!TB||TB==100;$('#tblp').textContent=TB==100?'🥡 С собой':t('tbl')+' '+TB;const g=lk('2gis');$('#m2gis').href=g||'#';$('#m2gis').style.visibility=g?'':'hidden';
+function home(){$('#tblp').hidden=!TB;$('#callW').hidden=!TB||TB==100;$('#tblp').textContent=TB==100?'🛵 '+t('out'):t('tbl')+' '+TB;$('#outW').innerHTML=OUT?`<a class="outb" href="#menu"><b>🛵 ${t('dlv')} ${M(DFEE)} · ${t('free')} ${t('from')} ${M(DFREE)}</b><span>🥡 ${t('pick')} — ${t('free')}. ${t('outHint')}</span></a>`:(!TB?`<a class="outb" href="?take=1"><b>🛵 ${t('outCard')}</b><span>${t('outCardS')} · ${t('dlv')} ${t('free')} ${t('from')} ${M(DFREE)}</span></a>`:'');$('#outW').hidden=!$('#outW').innerHTML;const g=lk('2gis');$('#m2gis').href=g||'#';$('#m2gis').style.visibility=g?'':'hidden';
  const ph=D.filter(d=>d.photo&&!d.stop),o=ph[Math.floor(Date.now()/864e5)%Math.max(1,ph.length)];$('#offW').hidden=!o;
  if(o)$('#offer').outerHTML=`<a class="offer" id="offer" href="#d/${o.id}"><div class="im">${pic(o)}</div><div class="bd"><div class="r"><div><b>${E(o.name)}</b>${o.descr?`<small>${E(o.descr)}</small>`:''}</div><span class="tagp">${M(o.price)}</span></div><span class="btn">${t('more')}</span></div></a>`;
  const so=['instagram','tiktok'].filter(lk);$('#socD').hidden=!so.length;$('#socD').style.gridTemplateColumns=`repeat(${so.length||1},1fr)`;
@@ -230,7 +245,8 @@ function home(){$('#tblp').hidden=!TB;$('#callW').hidden=!TB||TB==100;$('#tblp')
 
 /* меню */
 function paintMenu(){if(!loaded){$('#list').innerHTML=`<div class="empty"><p>${t('load')}</p></div>`;return}
- const qs=($('#q').value||'').trim().toLowerCase(),f=d=>!qs||(d.name+' '+(d.descr||'')).toLowerCase().includes(qs),cs=C.filter(c=>D.some(d=>d.cat_id==c.id&&f(d)));
+ const qs=($('#q').value||'').trim().toLowerCase(),f=d=>(!qs||(d.name+' '+(d.descr||'')).toLowerCase().includes(qs))&&!hasAlg(d),cs=C.filter(c=>D.some(d=>d.cat_id==c.id&&f(d))),hid=D.filter(hasAlg).length;
+ $('#algW').innerHTML=`<button class="algb ${ALX.length?'on':''}" onclick="ALO=!ALO;paintMenu()">⚠ ${t('algF')}${ALX.length?' · '+ALX.length:''} ${ALO?'▴':'▾'}</button>${ALX.length?`<small>${t('algHid')}: ${hid}</small>`:''}${ALO?`<div class="algp"><small>${t('algT')}</small><div>${ALG.map(a=>`<button class="${ALX.includes(a)?'on':''}" onclick="algT('${a}')">${a}</button>`).join('')}</div>${ALX.length?`<button class="algr" onclick="ALX=[];ls.set('galx',ALX);paintMenu()">${t('algAll')}</button>`:''}</div>`:''}`;
  $('#cats').innerHTML=`<button class="flt" onclick="toggleS()" aria-label="Поиск">${I('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',1.6)}</button>`+cs.map((c,i)=>`<button data-c="${c.id}" class="${i?'':'on'}" onclick="jump(${c.id})">${E(c.name)}</button>`).join('');
  $('#list').innerHTML=cs.length?cs.map(c=>`<section class="sec" id="c${c.id}"><h2>${E(c.name)}</h2><div class="grid">${D.filter(d=>d.cat_id==c.id&&f(d)).map(card).join('')}</div></section>`).join(''):`<div class="empty"><b>${t('none')}</b></div>`;
  $('#note').textContent=SV?`${t('note')} ${SV}%`:'';spy()}
@@ -242,18 +258,18 @@ let ob,VIS=new Set;function spy(){if(ob)ob.disconnect();VIS=new Set;ob=new Inter
 const emptyB=(b,s,ic)=>`<div class="empty">${I(ic,1.1)}<b>${b}</b><p>${s}</p><a class="btn" href="#menu">${t('toMenu')}</a></div>`;
 function favV(){const ds=FAV.map(dish).filter(Boolean);$('#favL').innerHTML=ds.length?`<div class="grid">${ds.map(card).join('')}</div>`:emptyB(t('favEb'),t('favE'),HEART)}
 function sentH(){if(!SENT)return'';const st=SENT.st,k=st=='accepted'?['ok','accT','accW','<path d="M5 12l5 5 9-10"/>']:st=='rejected'?['no','rejT','rejW','<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/>']:['','sentT','sentW','<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'];
- return`<div class="sent ${k[0]}">${I(k[3],1.8)}<div><b>${t(k[1])}</b>${t(k[2])}</div></div>`}
+ return`<div class="sent ${k[0]}">${I(k[3],1.8)}<div><b>${t(k[1])}</b>${t(k[2])}${SENT.out?`<small style="display:block;margin-top:4px">${t('ordNo')}${SENT.id} · ${SENT.out=='delivery'?'🛵 '+t('dlv'):'🥡 '+t('pick')} · ${M((+SENT.sum||0)+(+SENT.fee||0))}</small>`:''}</div></div>`}
 function cartV(){const it=Object.entries(CART).map(([id,n])=>[dish(id),n]).filter(x=>x[0]);if(!it.length)return $('#cartL').innerHTML=SENT?sentH()+`<a class="btn" href="#menu" style="border-radius:999px;background:var(--acc)">${t('toMenu')}</a>`:emptyB(t('cartEb'),t('cartE'),BASKET);
- const sub=it.reduce((a,[d,n])=>a+d.price*n,0),sv=SV?Math.round(sub*SV/100):0;
+ const sub=it.reduce((a,[d,n])=>a+d.price*n,0),sv=SV?Math.round(sub*SV/100):0,fee=OUT&&OK=='delivery'&&sub<DFREE?DFEE:0;
  $('#cartL').innerHTML=sentH()+it.map(([d,n])=>`<div class="ci"><a class="im" href="#d/${d.id}">${pic(d)}</a><div class="tx"><b>${E(d.name)}</b><span class="pr">${M(d.price*n)}</span><div class="st"><button onclick="ad(${d.id},-1)" aria-label="−">−</button><span>${n} ${t('pcs')}</span><button onclick="ad(${d.id},1)" aria-label="+">+</button></div></div></div>`).join('')+
- `<div class="row2"><span>${t('sub')}</span><span>${M(sub)}</span></div>${SV?`<div class="row2"><span>${t('srv')} ${SV}%</span><span>${M(sv)}</span></div>`:''}<div class="row2 t"><span>${t('tot')}</span><span>${M(sub+sv)}</span></div>${TB?`<input class="cmt" id="cmt" placeholder="${t('cmt')}" maxlength="300"><button class="btn" id="sendB" onclick="sendOrder()">${t('send')} · ${TB==100?'С собой':t('tbl')+' '+TB}</button>`:`<p class="hint">${t('show')}</p>`}<button class="clr" onclick="CART={};save();rerender()">${t('clr')}</button>`}
+ `<div class="row2"><span>${t('sub')}</span><span>${M(sub)}</span></div>${SV?`<div class="row2"><span>${t('srv')} ${SV}%</span><span>${M(sv)}</span></div>`:''}${OUT?`<div class="seg"><button class="${OK=='take'?'on':''}" onclick="setOK('take')">🥡 ${t('pick')}</button><button class="${OK=='delivery'?'on':''}" onclick="setOK('delivery')">🛵 ${t('dlv')}</button></div>${OK=='delivery'?`<div class="row2"><span>${t('dlv')}</span><span>${fee?M(fee):t('free')}</span></div>${fee?`<p class="hint" style="margin:6px 2px 0">${t('toFree')} ${M(DFREE-sub)}</p>`:''}`:''}`:''}<div class="row2 t"><span>${t('tot')}</span><span>${M(sub+sv+fee)}</span></div>${OUT?`<div class="oform"><input class="cmt" id="onm" placeholder="${t('nm')}" maxlength="60" autocomplete="name" value="${E(OF.nm)}" oninput="ofIn('nm',this.value)"><input class="cmt" id="oph" type="tel" inputmode="tel" autocomplete="tel" placeholder="${t('ph')}" value="${E(OF.ph)}" oninput="ofIn('ph',this.value)">${OK=='delivery'?`<input class="cmt" id="oad" autocomplete="street-address" placeholder="${t('ad')}" maxlength="300" value="${E(OF.ad)}" oninput="ofIn('ad',this.value)">`:''}<input class="cmt" id="cmt" placeholder="${t('cmt')}" maxlength="300" value="${E(OCM)}" oninput="OCM=this.value"><p class="oerr" id="oerr" role="alert"></p><button class="btn" id="sendB" onclick="sendOut()">${t('sendOut')} · ${M(sub+fee)}</button><p class="hint">${OK=='delivery'?t('outHint'):t('pickHint')}</p></div>`:TB?`<input class="cmt" id="cmt" placeholder="${t('cmt')}" maxlength="300"><button class="btn" id="sendB" onclick="sendOrder()">${t('send')} · ${t('tbl')+' '+TB}</button>`:`<p class="hint">${t('show')}</p>`}<button class="clr" onclick="CART={};save();rerender()">${t('clr')}</button>`}
 
 /* блюдо */
 function dishV(id){const d=dish(id);if(!d)return location.hash='#menu';const f=FAV.includes(d.id),c=C.find(x=>x.id==d.cat_id);
  $('#v-dish').innerHTML=`<div class="hero">${pic(d)}<div class="tb"><button onclick="history.length>1?history.back():location.hash='#menu'" aria-label="Назад">${I('<path d="M15 5l-7 7 7 7"/>',2)}</button><button class="${f?'on':''}" onclick="tf(${d.id})" aria-label="Избранное">${I(HEART,1.7,f?'currentColor':'none')}</button></div></div>
  <div class="pn">${TAGS(d).length?`<div class="tgs">${tagH(d)}</div>`:''}<h2>${E(d.name)}</h2>${d.descr?`<p>${E(d.descr)}</p>`:`<p>${E(c?c.name:'')}</p>`}
  ${[d.weight,d.kcal,d.prot,d.fat,d.carb].some(x=>x!=null&&x!=='')?`<div class="nut">${[['weight','g'],['kcal','kcal'],['prot','p'],['fat','f'],['carb','c']].map(([k,l])=>`<div>${d[k]!=null&&d[k]!==''?+d[k]:'—'}<small>${t(l)}</small></div>`).join('')}</div>`:''}
- ${d.allerg?`<div class="alg"><b>${t('alg')}:</b> ${E(d.allerg)}</div>`:''}
+ ${d.allerg?`<div class="alg"><b>${t('alg')}:</b> ${E(d.allerg)}</div>`:''}${d.kcal!=null||d.allerg?`<small class="apx">${t('approx')}</small>`:''}
  ${d.stop?'':`<div class="qty"><button onclick="qty=Math.max(1,qty-1);dishV(${d.id})" aria-label="−">−</button><b>${qty} ${t('pcs')}</b><button onclick="qty++;dishV(${d.id})" aria-label="+">+</button></div>`}</div>`;
  $('#buy').innerHTML=d.stop?`<button disabled><span class="l">${t('off')}</span></button>`:`<button onclick="ad(${d.id},qty);this.querySelector('.l').innerHTML='${t('added')} ✓'"><span class="p">${M(d.price*qty)}</span><span class="l">${t('add')} ${I(BASKET,1.6)}</span></button>`}
 
@@ -267,8 +283,8 @@ addEventListener('hashchange',route);
 function paintText(){document.documentElement.lang=LG=='kz'?'kk':'ru';$('#lang').textContent=LG=='kz'?'РУС':'ҚАЗ';document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));$('#q').placeholder=t('search');rerender()}
 function setLg(){LG=LG=='kz'?'ru':'kz';ls.set('glg',LG);paintText()}
 
-async function loadData(){try{const[c,d,s,l]=await Promise.all([sb.from('cats').select('*').order('id'),sb.from('dishes').select('id,cat_id,name,price,stop,descr,photo,weight,kcal,prot,fat,carb,allerg,tags').order('id'),sb.from('settings').select('val').eq('key','service'),sb.from('links').select('*').order('pos')]);
- L=l.data||[];SV=s.data&&s.data[0]?+s.data[0].val:null;if(TB==100)SV=null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;
+async function loadData(){try{const[c,d,s,l]=await Promise.all([sb.from('cats').select('*').order('id'),sb.from('dishes').select('id,cat_id,name,price,stop,descr,photo,weight,kcal,prot,fat,carb,allerg,tags').order('id'),sb.from('settings').select('key,val').in('key',['service','delivery_fee','delivery_free']),sb.from('links').select('*').order('pos')]);
+ L=l.data||[];const SM=Object.fromEntries((s.data||[]).map(x=>[x.key,+x.val]));SV='service' in SM?SM.service:null;if('delivery_fee' in SM)DFEE=SM.delivery_fee;if('delivery_free' in SM)DFREE=SM.delivery_free;if(TB==100)SV=null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;
  for(const k in CART)if(!dish(k)||dish(k).stop)delete CART[k];FAV=FAV.filter(x=>dish(x));save();route()}
  catch(e){$('#list').innerHTML=`<div class="empty"><p>${t('err')}</p></div>`}}
 save();paintText();route();loadData();
