@@ -1,7 +1,7 @@
 -- Niet Café 32: СБРОС ПЕРЕД ЗАПУСКОМ — удаляет всю статистику (и демо-данные, и любые тестовые заказы).
 -- Supabase -> SQL Editor -> New query -> вставить всё -> Run.  ⚠ Отменить нельзя!
 --
--- УДАЛЯЕТСЯ: все заказы и позиции, отмены, заявки гостей (стол/доставка/самовывоз), вызовы официанта,
+-- УДАЛЯЕТСЯ: все заказы и позиции, отмены, заявки гостей (стол/доставка/самовывоз), вызовы официанта, оценки и отзывы, база клиентов,
 --            приходы, списания, инвентаризации, журнал склада, история цен. Номера заказов начнутся с 1.
 -- ОСТАЁТСЯ:  меню, фото, описания, техкарты, продукты, сотрудники, настройки и затраты, ссылки, подписки на push.
 -- ЦЕНЫ И ОСТАТКИ продуктов, стоп-лист: если загружали демо (файл 31) — возвращаются к состоянию ДО демо.
@@ -26,7 +26,7 @@ begin
   begin execute 'alter table products enable trigger products_autostop_t'; exception when others then null; end;
 
   -- 2. удалить статистику (номера заказов начнутся с 1)
-  foreach tb in array array['item_costs','order_log','order_items','orders','guest_orders','calls','receipts','movements','stock_log','price_history'] loop
+  foreach tb in array array['item_costs','order_log','order_items','orders','guest_orders','calls','receipts','movements','stock_log','price_history','reviews','guest_push_subs'] loop
     if to_regclass('public.'||tb) is not null then L := L || tb; end if;
   end loop;
   execute 'truncate table '||array_to_string(L, ', ')||' restart identity cascade';

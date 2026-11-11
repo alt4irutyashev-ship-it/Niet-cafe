@@ -15,7 +15,7 @@
 do $demo$
 declare
   W uuid[]; pool int[]; dd int; dy date; n int; i int; j int; o int; ot timestamptz; tc timestamptz; tr timestamptz;
-  kd text; tb int; did int; qn int; sub numeric; pct numeric; sv numeric; fee numeric; tot numeric; r numeric; pm text;
+  kd text; tb int; cl int; did int; qn int; sub numeric; pct numeric; sv numeric; fee numeric; tot numeric; r numeric; pm text;
   v_fee numeric := coalesce((select val from settings where key='delivery_fee'),990);
   v_free numeric := coalesce((select val from settings where key='delivery_free'),5000);
   hrs int[] := '{10,11,12,12,13,13,13,14,14,15,16,17,18,18,19,19,19,20,20,20,21,21,22}';
@@ -114,9 +114,12 @@ begin
       if kd = 'take' then tk := tk % 98 + 1; tb := 100 + tk;
       elsif kd = 'delivery' then dl := dl % 98 + 1; tb := 200 + dl;
       else tb := 1 + floor(random()*9)::int; end if;
+      cl := 1 + floor(60 * power(random(), 2.2))::int;      -- 60 демо-клиентов: несколько постоянных, много разовых
       insert into orders(tbl,kind,waiter,note,phone,address,cname)
       values(tb, kd, W[1 + floor(random()*cardinality(W))::int], 'DEMO',
-             case when kd<>'dine' then '+7 700 000 00 00' end, case when kd='delivery' then 'Демо-адрес, д. 1' end, case when kd<>'dine' then 'Демо-гость' end)
+             case when kd<>'dine' then '+7 700 000 '||lpad((cl/100)::text,2,'0')||' '||lpad((cl%100)::text,2,'0') end,
+             case when kd='delivery' then 'Демо-адрес, д. '||cl end,
+             case when kd<>'dine' then (array['Айгерим','Данияр','Асель','Нурлан','Мадина','Ерлан','Дана','Арман','Алия','Тимур','Жанар','Санжар'])[1 + cl % 12]||' (демо '||cl||')' end)
       returning id into o;
       for j in 1 .. case kd when 'dine' then 2 + floor(random()*4)::int when 'take' then 1 + floor(random()*3)::int else 2 + floor(random()*3)::int end loop
         for z in 1..8 loop                                   -- блюдо из стоп-листа официант не продаст
