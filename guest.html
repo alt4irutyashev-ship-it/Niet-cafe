@@ -341,7 +341,7 @@ async function rateGo(n,tx){const{error}=await sb.rpc('guest_review',{p_id:SENT.
 async function rate(n){if(SENT.rt&&SENT.rt.step=='done')return;if(n==5){const g=lk('2gis');if(g)window.open(g,'_blank','noopener');SENT.rt={n:5,step:'done'};ls.set('gsent',SENT);rerender();if(!await rateGo(5))toast(t('noNet'));return}
  const tx=$('#rtx')?$('#rtx').value:'';SENT.rt={n,step:'text',tx};ls.set('gsent',SENT);rerender();setTimeout(()=>$('#rtx')&&$('#rtx').focus(),50)}
 async function rateSend(b){const tx=($('#rtx').value||'').trim();b.disabled=true;if(!await rateGo(SENT.rt.n,tx)){b.disabled=false;return toast(t('noNet'))}SENT.rt={n:SENT.rt.n,step:'done'};ls.set('gsent',SENT);rerender()}
-const GVAPID='BLgjALg9OWf6c4ToiRkzYtOkbeD7_WAHG8tZ3nUIxIRZObcTV8nevnoDQJfFM3dUbQJqrbhd4eQGbw3wc2xz0ZU';
+const GVAPID='BLpdV9hL9P0t20iigEI1qizxX8SeP5oHXD1DrwZxVhAW2J-HDSwmndg38NCIxpz2mWUjO_sRzZkKyCtzRXu9LIc';
 const gpOK=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window&&location.protocol=='https:';
 const gIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)&&!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
 function gpH(){if(!SENT||!SENT.out)return'';   /* для доставки и самовывоза: гость уходит со страницы */
@@ -350,7 +350,8 @@ function gpH(){if(!SENT||!SENT.out)return'';   /* для доставки и с�
  if(Notification.permission=='denied')return`<small class="sm psh">🔕 ${t('pshNo')}</small>`;
  return`<button class="pshb" onclick="gpOn(this)">🔔 ${t('pshB')}</button>`}
 async function gpOn(b){if(b)b.disabled=true;try{let p=Notification.permission;if(p!='granted')p=await Notification.requestPermission();if(p!='granted'){rerender();return}
- const r=await navigator.serviceWorker.ready;let s=await r.pushManager.getSubscription();
+ const r=await navigator.serviceWorker.ready;let s=await r.pushManager.getSubscription();const kb=(k=>{const a=atob((k+'='.repeat((4-k.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(a,c=>c.charCodeAt(0))})(GVAPID);
+ try{const o=s&&s.options&&s.options.applicationServerKey&&new Uint8Array(s.options.applicationServerKey);if(o&&!(o.length==kb.length&&o.every((x,i)=>x==kb[i]))){await s.unsubscribe();s=null}}catch(e){}
  if(!s){const k=GVAPID,a=atob((k+'='.repeat((4-k.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));s=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(a,c=>c.charCodeAt(0))})}
  const j=s.toJSON(),{data,error}=await sb.rpc('guest_push_register',{p_order:SENT.id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth});
  if(error||!data)throw error||new Error('no');SENT.push=1;ls.set('gsent',SENT);toast('🔔 '+t('pshOn'))}catch(e){console.warn('push',e);toast(t('noNet'))}rerender()}

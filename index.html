@@ -133,12 +133,14 @@ h4{margin:18px 2px 8px;font-size:13px;letter-spacing:.4px;text-transform:upperca
 const URL_='https://iamomamsltqfpeljahuy.supabase.co',KEY='sb_publishable_4l_mW-_FDstSX2IhEtjvSQ_kf0rr55J';
 const sb=supabase.createClient(URL_,KEY),$=s=>document.querySelector(s),M=n=>Math.round(n||0).toLocaleString('ru-RU')+' ₸';
 /* ---- push-уведомления ---- */
-const VAPID='BLgjALg9OWf6c4ToiRkzYtOkbeD7_WAHG8tZ3nUIxIRZObcTV8nevnoDQJfFM3dUbQJqrbhd4eQGbw3wc2xz0ZU';
+const VAPID='BLpdV9hL9P0t20iigEI1qizxX8SeP5oHXD1DrwZxVhAW2J-HDSwmndg38NCIxpz2mWUjO_sRzZkKyCtzRXu9LIc';
 const b64u=x=>{const r=atob((x+'='.repeat((4-x.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(r,c=>c.charCodeAt(0))};
 const pushOK=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window&&location.protocol=='https:';
 const PUSHR=['waiter','kitchen','bar','boss','store'];
 const swReady=()=>Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(()=>j(new Error(T('Сервис-воркер не загрузился — обновите страницу'))),5000))]);
-async function pushSub(){const r=await swReady();let s=await r.pushManager.getSubscription();if(!s)s=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID)});const j=s.toJSON();const{error}=await sb.rpc('push_register',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_ua:navigator.userAgent.slice(0,200)});if(error)throw error;return s}
+/* подписка, сделанная со старым ключом VAPID, не работает (403/401) — пересоздаём автоматически */
+const keyOk=s=>{try{const k=s&&s.options&&s.options.applicationServerKey;if(!k){try{return localStorage.getItem('vapidk')==VAPID}catch(e){return true}}const a=new Uint8Array(k),b=b64u(VAPID);return a.length==b.length&&a.every((x,i)=>x==b[i])}catch(e){return true}};
+async function pushSub(){const r=await swReady();let s=await r.pushManager.getSubscription();if(s&&!keyOk(s)){try{await sb.rpc('push_unregister',{p_endpoint:s.endpoint})}catch(e){}await s.unsubscribe();s=null}if(!s){s=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID)});try{localStorage.setItem('vapidk',VAPID)}catch(e){}}const j=s.toJSON();const{error}=await sb.rpc('push_register',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_ua:navigator.userAgent.slice(0,200)});if(error)throw error;return s}
 function pushSync(){if(pushOK()&&Notification.permission=='granted'&&me&&PUSHR.includes(me.role))pushSub().catch(e=>console.warn('push',e))}
 async function pushEnable(){if(!pushOK())return toast(T('Уведомления не поддерживаются на этом устройстве'));let p=Notification.permission;if(p!='granted')p=await Notification.requestPermission();if(p!='granted'){toast(T('Уведомления не разрешены'));return render()}try{await pushSub();toast('✅ '+T('Push включён'))}catch(e){console.error(e);toast(T('Не удалось включить')+': '+(e.message||e))}render()}
 async function pushOff(){if(!pushOK())return;try{await Promise.race([(async()=>{const r=await swReady(),s=await r.pushManager.getSubscription();if(s){await sb.rpc('push_unregister',{p_endpoint:s.endpoint});await s.unsubscribe()}})(),new Promise(r=>setTimeout(r,3000))])}catch(e){}}

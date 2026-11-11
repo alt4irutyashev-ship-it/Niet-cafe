@@ -54,7 +54,7 @@ async function sendOne(s: Sub, payload: string, ttl: number) {
     console.error("push error", code, err?.body ?? err?.message);
     if (!s.guest) {
       const { data } = await sb.from(table).select("fails").eq("id", s.id).maybeSingle();
-      await sb.from(table).update({ fails: (data?.fails ?? 0) + 1, last_err: String(code ?? err?.message ?? "error").slice(0, 200) }).eq("id", s.id);
+      await sb.from(table).update({ fails: (data?.fails ?? 0) + 1, last_err: (String(code ?? "") + " " + String(err?.body ?? err?.message ?? "")).trim().slice(0, 200) }).eq("id", s.id);
     }
     return 0;
   }
