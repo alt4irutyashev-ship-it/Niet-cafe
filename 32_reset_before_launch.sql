@@ -11,6 +11,7 @@
 do $reset$
 declare tb text; L text[] := '{}';
 begin
+  perform set_config('niet.nopush','1',true);   -- без push-уведомлений во время сброса
   -- 1. вернуть цены, остатки и стоп-лист как до демо (автостоп на это время выключен, чтобы не писал в журнал)
   begin execute 'alter table products disable trigger products_autostop_t'; exception when others then null; end;
   if to_regclass('public.demo_backup_products') is not null then
@@ -32,7 +33,7 @@ begin
 end $reset$;
 
 -- ПО ЖЕЛАНИЮ: обнулить остатки всех продуктов (кухня и бар). Уберите «--» в начале следующей строки:
--- alter table products disable trigger products_autostop_t; update products set s_kitchen = 0, s_bar = 0; alter table products enable trigger products_autostop_t;
+-- select set_config('niet.nopush','1',false); alter table products disable trigger products_autostop_t; update products set s_kitchen = 0, s_bar = 0; alter table products enable trigger products_autostop_t;
 
 select (select count(*) from orders) as "Заказов", (select count(*) from receipts) as "Приходов", (select count(*) from movements) as "Записей в журнале",
        (select count(*) from dishes where not coalesce(archived,false)) as "Блюд в меню", (select count(*) from recipes) as "Строк техкарт",

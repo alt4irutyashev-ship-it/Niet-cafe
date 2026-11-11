@@ -38,6 +38,7 @@ begin
   insert into demo_backup_dishes select id, coalesce(stop,false), coalesce(stop_auto,false) from dishes on conflict (id) do nothing;
 
   -- 2. push-уведомления выключаем на время загрузки
+  perform set_config('niet.nopush','1',true);   -- никаких push-уведомлений, пока создаются демо-данные (файл 33)
   begin execute 'alter table order_items disable trigger push_ins_t'; exception when others then null; end;
   begin execute 'alter table order_items disable trigger push_upd_t'; exception when others then null; end;
   begin execute 'alter table order_items disable trigger push_del_t'; exception when others then null; end;

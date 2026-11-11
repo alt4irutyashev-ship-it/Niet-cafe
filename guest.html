@@ -135,6 +135,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;border:0;
 .stp li::before{content:'';position:absolute;top:11px;left:-50%;right:50%;height:3px;background:var(--line)}.stp li:first-child::before{display:none}.stp li.dn::before,.stp li.cur::before{background:var(--acc)}
 .stp i{position:relative;z-index:1;display:grid;place-items:center;width:24px;height:24px;margin:0 auto 5px;border-radius:50%;background:var(--card);border:2px solid var(--line)}.sent .stp i svg{width:13px;height:13px;color:#fff}
 .stp li.dn i{background:var(--acc);border-color:var(--acc);color:#fff}.stp li.cur i{border-color:var(--acc);box-shadow:0 0 0 4px var(--acc2)}.stp li.cur i::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--acc)}.stp li.cur{color:var(--ink);font-weight:600}
+.pshb{display:block;width:100%;margin-top:12px;border:0;border-radius:999px;padding:11px 14px;background:var(--acc);color:#fff;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer}.pshb:disabled{opacity:.6}.sent .psh.on{color:#3f7d5a;font-weight:600}
 .sent.ok .stp li i{background:#5b6640;border-color:#5b6640}.sent.ok .stp li::before{background:#5b6640}.sent .sm{display:block;margin-top:10px;font-size:12px;color:var(--mute)}
 #stH .sent{margin:0 0 12px}
 
@@ -231,11 +232,11 @@ const TX={ru:{hi:'Добро пожаловать!',our:'Наше меню',open
 Object.assign(TX.ru,{s_new:'Отправлен',s_acc:'Принят',s_cook:'Готовится',s_way:'В пути',s_dlv:'Доставлен',s_rdy:'Готов к выдаче',s_got:'Выдан',s_rdyT:'Готово',s_srv:'Подано',
  h_new:'Заказ отправлен',d_new:'Ждём подтверждения — обычно это пара минут',d_newT:'Официант скоро подтвердит его',h_acc:'Заказ принят',d_acc:'Скоро начнём готовить',h_cook:'Готовится',d_cook:'Повар уже готовит ваш заказ',
  h_rdyD:'Заказ собран',d_rdyD:'Передаём курьеру',h_rdy:'Готов к выдаче',d_rdy:'Можно забирать — назовите номер заказа',h_rdyT:'Всё готово',d_rdyT:'Официант уже несёт',h_way:'Заказ в пути',d_way:'Курьер едет к вам',
- h_dlv:'Заказ доставлен',h_got:'Заказ выдан',d_end:'Спасибо, что выбрали нас! Приятного аппетита',h_srv:'Подано',d_srv:'Приятного аппетита!',stUpd:'Статус заказа',hide:'Скрыть',live:'обновляется сам'});
+ pshB:'Сообщить о статусе на телефон',pshOn:'Пришлём уведомление, даже если телефон заблокирован',pshNo:'Уведомления запрещены в настройках браузера',pshI:'На iPhone: «Поделиться» → «На экран Домой», откройте меню с иконки — тогда придут уведомления',h_dlv:'Заказ доставлен',h_got:'Заказ выдан',d_end:'Спасибо, что выбрали нас! Приятного аппетита',h_srv:'Подано',d_srv:'Приятного аппетита!',stUpd:'Статус заказа',hide:'Скрыть',live:'обновляется сам'});
 Object.assign(TX.kz,{s_new:'Жіберілді',s_acc:'Қабылданды',s_cook:'Дайындалуда',s_way:'Жолда',s_dlv:'Жеткізілді',s_rdy:'Алуға дайын',s_got:'Берілді',s_rdyT:'Дайын',s_srv:'Әкелінді',
  h_new:'Тапсырыс жіберілді',d_new:'Растауды күтеміз — әдетте бірер минут',d_newT:'Даяшы жақында растайды',h_acc:'Тапсырыс қабылданды',d_acc:'Жақында дайындай бастаймыз',h_cook:'Дайындалуда',d_cook:'Аспаз тапсырысыңызды дайындап жатыр',
  h_rdyD:'Тапсырыс жиналды',d_rdyD:'Курьерге беріп жатырмыз',h_rdy:'Алуға дайын',d_rdy:'Келіп алуға болады — тапсырыс нөмірін айтыңыз',h_rdyT:'Бәрі дайын',d_rdyT:'Даяшы әкеле жатыр',h_way:'Тапсырыс жолда',d_way:'Курьер сізге келе жатыр',
- h_dlv:'Тапсырыс жеткізілді',h_got:'Тапсырыс берілді',d_end:'Бізді таңдағаныңызға рахмет! Ас болсын',h_srv:'Әкелінді',d_srv:'Ас болсын!',stUpd:'Тапсырыс мәртебесі',hide:'Жасыру',live:'өздігінен жаңарады'});
+ pshB:'Мәртебені телефонға хабарлау',pshOn:'Телефон құлыпталса да хабарлама жібереміз',pshNo:'Браузер баптауларында хабарламаға тыйым салынған',pshI:'iPhone-да: «Бөлісу» → «Басты экранға», мәзірді белгішеден ашыңыз — сонда хабарламалар келеді',h_dlv:'Тапсырыс жеткізілді',h_got:'Тапсырыс берілді',d_end:'Бізді таңдағаныңызға рахмет! Ас болсын',h_srv:'Әкелінді',d_srv:'Ас болсын!',stUpd:'Тапсырыс мәртебесі',hide:'Жасыру',live:'өздігінен жаңарады'});
 Object.assign(TX.ru,{bill:'Ваш заказ',b_new:'Принят',b_cook:'Готовится',b_ready:'Готово',b_srv:'Подано',bNote:'Сумма обновляется сама. Окончательный счёт принесёт официант.',bAll:'Показать все',bLess:'Свернуть'});
 Object.assign(TX.kz,{bill:'Сіздің тапсырысыңыз',b_new:'Қабылданды',b_cook:'Дайындалуда',b_ready:'Дайын',b_srv:'Әкелінді',bNote:'Сома өздігінен жаңарады. Соңғы шотты даяшы әкеледі.',bAll:'Барлығын көрсету',bLess:'Жасыру'});
 Object.assign(TX.ru,{comp:'Состав',addedT:'добавлено в «Мой выбор»'});Object.assign(TX.kz,{comp:'Құрамы',addedT:'«Менің таңдауым»-ға қосылды'});
@@ -327,7 +328,20 @@ function sentH(){if(!SENT)return'';const st=SENT.st||'new',ty=SENT.out||'table';
   hk={new:['h_new',ty=='table'?'d_newT':'d_new'],accepted:['h_acc','d_acc'],cooking:['h_cook','d_cook'],ready:ty=='delivery'?['h_rdyD','d_rdyD']:ty=='take'?['h_rdy','d_rdy']:['h_rdyT','d_rdyT'],way:['h_way','d_way'],done:[ty=='delivery'?'h_dlv':'h_got','d_end'],served:['h_srv','d_srv']}[st]||['h_new','d_new'],fin=FIN.includes(st);
  return`<div class="sent st ${fin?'ok':''}"><div class="sh"><div><small>${t('stUpd')}${SENT.out?` · ${t('ordNo')}${SENT.id}`:''}</small><b>${t(hk[0])}</b><span>${t(hk[1])}</span></div>${fin?`<button class="sx" onclick="sentHide()" aria-label="${t('hide')}">✕</button>`:`<i class="pulse" title="${t('live')}"></i>`}</div>
  <ol class="stp">${steps.map((k,i)=>`<li class="${i<ix||fin?'dn':i==ix?'cur':''}"><i>${i<ix||fin?I('<path d="M5 12l5 5 9-10"/>',2.4):''}</i><span>${t(k)}</span></li>`).join('')}</ol>
- ${SENT.out?`<small class="sm">${SENT.out=='delivery'?'🛵 '+t('dlv'):'🥡 '+t('pick')} · ${M((+SENT.sum||0)+(+SENT.fee||0))}</small>`:''}</div>`}
+ ${SENT.out?`<small class="sm">${SENT.out=='delivery'?'🛵 '+t('dlv'):'🥡 '+t('pick')} · ${M((+SENT.sum||0)+(+SENT.fee||0))}</small>`:''}${fin?'':gpH()}</div>`}
+const GVAPID='BLgjALg9OWf6c4ToiRkzYtOkbeD7_WAHG8tZ3nUIxIRZObcTV8nevnoDQJfFM3dUbQJqrbhd4eQGbw3wc2xz0ZU';
+const gpOK=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window&&location.protocol=='https:';
+const gIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)&&!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
+function gpH(){if(!SENT||!SENT.out)return'';   /* для доставки и самовывоза: гость уходит со страницы */
+ if(SENT.push)return`<small class="sm psh on">🔔 ${t('pshOn')}</small>`;
+ if(!gpOK())return gIOS?`<small class="sm psh">📲 ${t('pshI')}</small>`:'';
+ if(Notification.permission=='denied')return`<small class="sm psh">🔕 ${t('pshNo')}</small>`;
+ return`<button class="pshb" onclick="gpOn(this)">🔔 ${t('pshB')}</button>`}
+async function gpOn(b){if(b)b.disabled=true;try{let p=Notification.permission;if(p!='granted')p=await Notification.requestPermission();if(p!='granted'){rerender();return}
+ const r=await navigator.serviceWorker.ready;let s=await r.pushManager.getSubscription();
+ if(!s){const k=GVAPID,a=atob((k+'='.repeat((4-k.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));s=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(a,c=>c.charCodeAt(0))})}
+ const j=s.toJSON(),{data,error}=await sb.rpc('guest_push_register',{p_order:SENT.id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth});
+ if(error||!data)throw error||new Error('no');SENT.push=1;ls.set('gsent',SENT);toast('🔔 '+t('pshOn'))}catch(e){console.warn('push',e);toast(t('noNet'))}rerender()}
 /* счёт стола: что уже заказано, статусы и сумма */
 let BILL=null,BB=0,BOPEN=false;const ISTBL=()=>TB>0&&TB<100;
 async function loadBill(){if(BB||!ISTBL()||document.hidden)return;BB=1;try{const{data,error}=await sb.rpc('guest_table_bill',{t:TB});if(error)return;const sig=JSON.stringify(data),old=JSON.stringify(BILL);BILL=data;if(sig!=old&&cur=='home')$('#billH').innerHTML=billH()}catch(e){}finally{BB=0}}
