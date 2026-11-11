@@ -152,29 +152,5 @@ create trigger push_call_t after insert on calls for each row execute function p
 revoke execute on function push_guest_order() from public, anon;
 revoke execute on function push_call() from public, anon;
 
--- ===== 7. Рыночная цена рядом с закупочной («Остатки» у руководителя) =====
-create table if not exists price_ref(
-  key text primary key, title text, unit text, price numeric, lo numeric, hi numeric,
-  inc text[], exc text[], prio int, source text, url text, note text, checked date default current_date);
-alter table price_ref add column if not exists manual boolean not null default false;
-alter table price_ref enable row level security;
-
-create or replace function market_prices()
-returns table(product_id int, title text, unit text, price numeric, lo numeric, hi numeric, source text, url text, checked date)
-language sql stable security definer set search_path=public as $$
-  with p as (
-    select p.id, translate(lower(p.name),'ё','е') as n,
-      case lower(trim(coalesce(p.unit,''))) when 'kg' then 'кг' when 'кг.' then 'кг' when 'l' then 'л' when 'л.' then 'л' when 'шт.' then 'шт'
-        else lower(trim(coalesce(p.unit,''))) end as u
-    from products p where my_role()='boss')
-  select distinct on (p.id) p.id, r.title, r.unit, r.price, r.lo, r.hi, r.source, r.url, r.checked
-  from p join price_ref r on r.unit=p.u
-   and not exists (select 1 from unnest(r.inc) x where p.n !~ x)
-   and not exists (select 1 from unnest(r.exc) x where p.n ~ x)
-  order by p.id, r.prio desc, r.key
-$$;
-revoke execute on function market_prices() from public, anon;
-grant execute on function market_prices() to authenticated;
-
 -- обновить кэш схемы API (иначе сайт может писать «Could not find a relationship …»)
 notify pgrst, 'reload schema';
