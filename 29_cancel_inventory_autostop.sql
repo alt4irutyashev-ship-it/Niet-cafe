@@ -15,7 +15,7 @@ alter table order_log add column if not exists cost numeric;
 
 create or replace function item_cancel(p_item bigint, p_qty int, p_reason text, p_return boolean default false)
 returns jsonb language plpgsql security definer set search_path=public as $$
-declare it order_items%rowtype; o orders%rowtype; q int; ret boolean;
+declare it order_items%rowtype; o orders%rowtype; q int; ret boolean; c numeric;
 begin
   if my_role() is distinct from 'boss' then raise exception 'Отменять принятые блюда может только руководитель'; end if;
   if coalesce(trim(p_reason),'') = '' then raise exception 'Укажите причину отмены'; end if;
@@ -24,6 +24,7 @@ begin
   select * into o from orders where id = it.order_id;
   if o.status is distinct from 'open' then raise exception 'Заказ уже закрыт'; end if;
   q := least(greatest(coalesce(p_qty, it.qty), 1), it.qty);
+  c := coalesce((select cost from item_costs where item_id = it.id), it.cost);   -- себестоимость порции на момент заказа
   ret := coalesce(p_return,false) and coalesce(it.stocked,false);
   if ret then   -- вернуть продукты на склад (брутто, с учётом потери при чистке)
     update products p set
@@ -33,12 +34,12 @@ begin
   end if;
   if q >= it.qty then
     delete from order_items where id = p_item;               -- журнал пишет триггер items_cancel_t
-    update order_log set reason = trim(p_reason), returned = ret, price = it.price, cost = it.cost
+    update order_log set reason = trim(p_reason), returned = ret, price = it.price, cost = c
      where id = (select max(id) from order_log where order_id = it.order_id and dish_id = it.dish_id);
   else
     update order_items set qty = qty - q where id = p_item;
     insert into order_log(order_id,label,dish_id,qty,station,was,uid,reason,returned,price,cost)
-    values(it.order_id,it.label,it.dish_id,q,it.station,it.status,auth.uid(),trim(p_reason),ret,it.price,it.cost);
+    values(it.order_id,it.label,it.dish_id,q,it.station,it.status,auth.uid(),trim(p_reason),ret,it.price,c);
   end if;
   return jsonb_build_object('qty',q,'returned',ret,'sum',q*coalesce(it.price,0));
 end$$;
