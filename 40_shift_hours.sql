@@ -69,13 +69,13 @@ create table if not exists shifts(
 );
 alter table shifts enable row level security;
 drop policy if exists shifts_read on shifts;
-create policy shifts_read on shifts for select using (my_role() = 'boss' or (my_role() = 'waiter' and closed_at > now() - interval '2 days'));
+create policy shifts_read on shifts for select using (my_role() = 'boss');   -- официант суммы смен не видит (слепое закрытие)
 
-create or replace function shift_summary(p_date date default null) returns jsonb
+-- полный расчёт смены (внутренняя, вызывается из shift_summary / shift_close)
+create or replace function shift_calc(d date) returns jsonb
 language plpgsql stable security definer set search_path=public as $$
-declare d date := coalesce(p_date, biz_date()); a timestamptz; b timestamptz; r jsonb;
+declare a timestamptz; b timestamptz; r jsonb;
 begin
-  if my_role() not in ('boss','waiter') then raise exception 'Нет доступа'; end if;
   a := biz_start(d); b := biz_start(d + 1);
   with o as (select * from orders where status = 'closed' and closed >= a and closed < b),
   w as (select coalesce(p.name,'—') nm, count(*) n, sum(o.total) s from o left join profiles p on p.id = o.waiter group by 1 order by 3 desc),
@@ -98,6 +98,7 @@ begin
     'first', (select min(created) from o), 'last', (select max(closed) from o),
     'cancels', (select jsonb_build_object('n',count(*),'s',coalesce(sum(qty*price),0)) from order_log where t >= a and t < b),
     'writeoffs', (select coalesce(sum(amount),0) from movements where kind = 'Списание' and t >= a and t < b),
+    'inv', (select coalesce(sum(case when kind = 'Недостача' then amount else -amount end),0) from movements where kind in ('Недостача','Излишек') and t >= a and t < b),
     'open', (select jsonb_build_object('n',count(*),'s',coalesce(sum(s),0),'tables',coalesce(jsonb_agg(tbl order by tbl),'[]')) from op),
     'waiters', (select coalesce(jsonb_agg(jsonb_build_object('name',nm,'n',n,'s',s)),'[]') from w),
     'top', (select coalesce(jsonb_agg(jsonb_build_object('name',nm,'q',q,'s',s)),'[]') from dsh),
@@ -105,6 +106,21 @@ begin
                  from shifts s left join profiles p on p.id = s.closed_by where s.bdate = d)
   ) into r;
   return r;
+end $$;
+revoke execute on function shift_calc(date) from public, anon, authenticated;
+
+-- руководителю — всё; официанту — «слепое» закрытие: без сумм, только открытые столы и факт закрытия
+create or replace function shift_summary(p_date date default null) returns jsonb
+language plpgsql stable security definer set search_path=public as $$
+declare d date := coalesce(p_date, biz_date()); r jsonb;
+begin
+  if my_role() not in ('boss','waiter') then raise exception 'Нет доступа'; end if;
+  r := shift_calc(d);
+  if my_role() = 'boss' then return r; end if;
+  return jsonb_build_object('blind', true, 'bdate', r->'bdate', 'from', r->'from', 'to', r->'to', 'now', r->'now',
+    'open', jsonb_build_object('n', r->'open'->'n', 'tables', r->'open'->'tables'),
+    'closed', case when r->'closed' is null or r->'closed' = 'null'::jsonb then null
+                   else jsonb_build_object('at', r->'closed'->'at', 'by', r->'closed'->'by') end);
 end $$;
 revoke execute on function shift_summary(date) from public, anon;
 grant execute on function shift_summary(date) to authenticated;
@@ -115,7 +131,7 @@ declare s jsonb; df numeric;
 begin
   if my_role() not in ('boss','waiter') then raise exception 'Нет доступа'; end if;
   if exists(select 1 from shifts where bdate = p_date) and my_role() <> 'boss' then raise exception 'Смена уже закрыта. Исправить может руководитель'; end if;
-  s := shift_summary(p_date);
+  s := shift_calc(p_date);
   df := coalesce(p_cash,0) - (s->>'cash')::numeric + coalesce(p_card,0) - (s->>'card')::numeric + coalesce(p_kaspi,0) - (s->>'kaspi')::numeric;
   insert into shifts(bdate,closed_at,closed_by,data,cash_fact,card_fact,kaspi_fact,diff,note)
   values(p_date, now(), auth.uid(), s - 'closed', p_cash, p_card, p_kaspi, df, nullif(trim(coalesce(p_note,'')),''))
