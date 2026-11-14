@@ -285,12 +285,13 @@ const pic=(d,big)=>d&&d.photo?(/^menu\/d\d+\.jpg$/.test(d.photo)?`<img src="${bi
 /* состав блюда из техкарты (без граммовки) */
 let ING={};const ING_SW=new Set(['охл','охл.','охлажд.','охлаждённая','охлажденная','охлаждённый','охлажденный','зам','зам.','замороженная','замороженный','замороженные','с/м','в/с','кг','г','гр','гр.','шт','шт.','л','мл','уп','уп.','пачка','бут']);
 const ingN=n=>n.replace(/\(.*?\)/g,' ').replace(/\d+([.,]\d+)?\s*(%|кг|гр?|мл|л)?/g,' ').replace(/[«»"]/g,'').toLowerCase().split(/[\s,;]+/).filter(w=>w&&!ING_SW.has(w)).join(' ').trim();
-async function loadIng(){try{const{data,error}=await sb.rpc('guest_ingredients');if(error||!data)return;ING={};data.forEach(r=>{const u=[];(r.items||[]).forEach(n=>{const x=ingN(n);if(x&&!u.includes(x))u.push(x)});ING[r.dish_id]=u});rerender()}catch(e){}}
+async function loadIng(){try{const{data,error}=await sb.rpc('guest_ingredients');if(error||!data)return;ING={};data.forEach(r=>{const u=[];(r.items||[]).forEach(n=>{const x=ingN(n);if(x&&!u.includes(x))u.push(x)});ING[r.dish_id]=u});GV++;rerender()}catch(e){}}
 const ingS=(d,n)=>{const a=ING[d.id]||[];return a.length?(n?a.slice(0,n):a).join(', ')+(n&&a.length>n?'…':''):''};
 const save=()=>{ls.set('gfav',FAV);ls.set('gcart',CART);const n=Object.values(CART).reduce((a,b)=>a+b,0);$('#bd').hidden=!n;$('#bd').textContent=n};
 const hb=d=>{const f=FAV.includes(d.id);return`<button class="hrt ${f?'on':''}" onclick="tf(${d.id})" aria-label="Избранное">${I(HEART,1.7,f?'currentColor':'none')}</button>`};
 
-function card(d){const n=CART[d.id]||0;return`<div class="dc ${d.stop?'off':''}"><a class="im" href="#d/${d.id}">${pic(d)}${TAGS(d).length?`<span class="tags">${tagH(d)}</span>`:''}</a>${hb(d)}<a class="nm" href="#d/${d.id}">${E(d.name)}</a>${ingS(d,4)?`<small class="ing">${E(ingS(d,4))}</small>`:''}${d.kcal?`<small class="kc">≈ ${d.kcal} ${t('kc')}${d.weight?' · '+d.weight+(d.cat_id==15||d.cat_id==16?' мл':' г'):''}</small>`:''}<div class="bt"><span class="pr">${d.stop?t('off'):M(d.price)}</span>${d.stop?'':`<button class="add ${n?'in':''}" onclick="ad(${d.id},1)" aria-label="${t('add')}">${n?n:I('<path d="M12 5v14M5 12h14"/>',2.2)}</button>`}</div></div>`}
+const cSt=d=>(CART[d.id]||0)+'|'+(FAV.includes(d.id)?1:0);
+function card(d){const n=CART[d.id]||0;return`<div class="dc ${d.stop?'off':''}" data-id="${d.id}" data-s="${cSt(d)}"><a class="im" href="#d/${d.id}">${pic(d)}${TAGS(d).length?`<span class="tags">${tagH(d)}</span>`:''}</a>${hb(d)}<a class="nm" href="#d/${d.id}">${E(d.name)}</a>${ingS(d,4)?`<small class="ing">${E(ingS(d,4))}</small>`:''}${d.kcal?`<small class="kc">≈ ${d.kcal} ${t('kc')}${d.weight?' · '+d.weight+(d.cat_id==15||d.cat_id==16?' мл':' г'):''}</small>`:''}<div class="bt"><span class="pr">${d.stop?t('off'):M(d.price)}</span>${d.stop?'':`<button class="add ${n?'in':''}" onclick="ad(${d.id},1)" aria-label="${t('add')}">${n?n:I('<path d="M12 5v14M5 12h14"/>',2.2)}</button>`}</div></div>`}
 function tf(id){FAV=FAV.includes(id)?FAV.filter(x=>x!=id):[...FAV,id];save();rerender()}
 function addClose(id){ad(id,qty);toast('✓ '+t('added')+(qty>1?' '+qty+' ×':'')+': '+(dish(id)||{}).name);try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}if(FROM&&history.length>1)history.back();else location.hash='#menu'}
 function ad(id,k){const n=(CART[id]||0)+k;if(n>0)CART[id]=n;else delete CART[id];save();rerender()}
@@ -310,7 +311,12 @@ const BIF={instagram:'<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circ
 const bIc=k=>`<span class="bimg"><img src="icons/${k}.svg" alt="" onload="this.parentNode.classList.add('ok')" onerror="this.remove()">${I(BIF[k]||'',1.6)}</span>`;
 
 /* меню */
-function paintMenu(){if(!loaded){$('#list').innerHTML=`<div class="empty"><p>${t('load')}</p></div>`;return}
+let GV=0,MSIG='';
+/* меню перерисовывается целиком только при смене данных/поиска/языка; «+» и ♥ меняют одну карточку — без лагов на длинном списке */
+function paintMenu(){if(!loaded){MSIG='';$('#list').innerHTML=`<div class="empty"><p>${t('load')}</p></div>`;return}
+ const sig=[GV,LG,$('#q').value,ALX.join(),ALO].join('§');
+ if(sig==MSIG&&$('#list .sec')){document.querySelectorAll('#list .dc[data-id]').forEach(el=>{const d=dish(+el.dataset.id);if(!d||el.dataset.s==cSt(d))return;const w=document.createElement('div');w.innerHTML=card(d);const nw=w.firstElementChild,im=el.querySelector('.im');if(im)nw.replaceChild(im,nw.querySelector('.im'));el.replaceWith(nw)});return}
+ MSIG=sig;
  const qs=($('#q').value||'').trim().toLowerCase(),f=d=>(!qs||(d.name+' '+(dsc(d)||'')).toLowerCase().includes(qs))&&!hasAlg(d),cs=C.filter(c=>D.some(d=>d.cat_id==c.id&&f(d))),hid=D.filter(hasAlg).length;
  $('#algW').innerHTML=`<button class="algb ${ALX.length?'on':''}" onclick="ALO=!ALO;paintMenu()">⚠ ${t('algF')}${ALX.length?' · '+ALX.length:''} ${ALO?'▴':'▾'}</button>${ALX.length?`<small>${t('algHid')}: ${hid}</small>`:''}${ALO?`<div class="algp"><small>${t('algT')}</small><div>${ALG.map(a=>`<button class="${ALX.includes(a)?'on':''}" onclick="algT('${a}')">${a}</button>`).join('')}</div>${ALX.length?`<button class="algr" onclick="ALX=[];ls.set('galx',ALX);paintMenu()">${t('algAll')}</button>`:''}</div>`:''}`;
  $('#cats').innerHTML=`<button class="flt" onclick="toggleS()" aria-label="Поиск">${I('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',1.6)}</button>`+cs.map((c,i)=>`<button data-c="${c.id}" class="${i?'':'on'}" onclick="jump(${c.id})">${E(c.name)}</button>`).join('');
@@ -318,7 +324,7 @@ function paintMenu(){if(!loaded){$('#list').innerHTML=`<div class="empty"><p>${t
  $('#note').textContent=SV?`${t('note')} ${SV}%`:'';spy()}
 function toggleS(){const w=$('#srchW'),on=w.hidden;w.hidden=!on;if(on)$('#q').focus();else{$('#q').value='';paintMenu()}}
 function jump(id){const s=$('#c'+id);if(s)s.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})}
-let ob,VIS=new Set;function spy(){if(ob)ob.disconnect();VIS=new Set;ob=new IntersectionObserver(es=>{es.forEach(e=>e.isIntersecting?VIS.add(e.target.id):VIS.delete(e.target.id));const f=[...document.querySelectorAll('.sec')].find(x=>VIS.has(x.id));if(!f)return;const id=f.id.slice(1);document.querySelectorAll('#cats button[data-c]').forEach(b=>{const on=b.dataset.c==id;b.classList.toggle('on',on);on&&b.scrollIntoView({inline:'center',block:'nearest'})})},{rootMargin:'-120px 0px -60% 0px'});document.querySelectorAll('.sec').forEach(x=>ob.observe(x))}
+let ob,VIS=new Set,SPC='';function spy(){if(ob)ob.disconnect();VIS=new Set;SPC='';ob=new IntersectionObserver(es=>{es.forEach(e=>e.isIntersecting?VIS.add(e.target.id):VIS.delete(e.target.id));const f=[...document.querySelectorAll('.sec')].find(x=>VIS.has(x.id));if(!f)return;const id=f.id.slice(1);if(id==SPC)return;SPC=id;const row=$('#cats');let ab=null;row.querySelectorAll('button[data-c]').forEach(b=>{const on=b.dataset.c==id;b.classList.toggle('on',on);if(on)ab=b});if(ab)requestAnimationFrame(()=>{const x=row.scrollLeft+ab.getBoundingClientRect().left-row.getBoundingClientRect().left-(row.clientWidth-ab.offsetWidth)/2;row.scrollTo({left:Math.max(0,x),behavior:'smooth'})})},{rootMargin:'-120px 0px -60% 0px'});document.querySelectorAll('.sec').forEach(x=>ob.observe(x))}
 
 /* избранное и мой выбор */
 const emptyB=(b,s,ic)=>`<div class="empty">${I(ic,1.1)}<b>${b}</b><p>${s}</p><a class="btn" href="#menu">${t('toMenu')}</a></div>`;
@@ -416,7 +422,7 @@ async function loadHours(){try{const{data,error}=await sb.rpc('guest_hours');if(
 const hrsT=()=>HRS?`${hh(HRS.open_min)}–${hh(HRS.close_min)}`:'';
 const hrsH=()=>HRS?`<div class="hrs ${HRS.is_open?'on':'off'}">🕘 ${t('hrsW')} ${hrsT()} · <b>${t(HRS.is_open?'hrsO':'hrsC')}</b></div>`:'';
 async function loadData(){try{const[c,d,s,l]=await Promise.all([sb.from('cats').select('*').order('id'),sb.from('dishes').select('id,cat_id,name,price,stop,descr,descr_kz,photo,weight,kcal,prot,fat,carb,allerg,tags').order('id').then(r=>r.error?sb.from('dishes').select('id,cat_id,name,price,stop,descr,photo,weight,kcal,prot,fat,carb,allerg,tags').order('id'):r),sb.from('settings').select('key,val').in('key',['service','delivery_fee','delivery_free']),sb.from('links').select('*').order('pos')]);
- L=l.data||[];const SM=Object.fromEntries((s.data||[]).map(x=>[x.key,+x.val]));SV='service' in SM?SM.service:null;if('delivery_fee' in SM)DFEE=SM.delivery_fee;if('delivery_free' in SM)DFREE=SM.delivery_free;if(TB==100)SV=null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;
+ L=l.data||[];const SM=Object.fromEntries((s.data||[]).map(x=>[x.key,+x.val]));SV='service' in SM?SM.service:null;if('delivery_fee' in SM)DFEE=SM.delivery_fee;if('delivery_free' in SM)DFREE=SM.delivery_free;if(TB==100)SV=null;if(c.error||d.error)throw 0;C=c.data;D=d.data;loaded=true;GV++;
  for(const k in CART)if(!dish(k)||dish(k).stop)delete CART[k];FAV=FAV.filter(x=>dish(x));save();route();loadBill();loadIng();loadHits()}
  catch(e){$('#list').innerHTML=`<div class="empty"><p>${t('err')}</p></div>`}}
 save();paintText();if(!rvInit()){route();loadData();loadHours();setInterval(()=>{if(!document.hidden)loadHours()},5*6e4)}

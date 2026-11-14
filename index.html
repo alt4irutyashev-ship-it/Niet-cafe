@@ -131,6 +131,31 @@ h4{margin:18px 2px 8px;font-size:13px;letter-spacing:.4px;text-transform:upperca
 .scx{overflow-x:auto;-webkit-overflow-scrolling:touch}@media(max-width:600px){.scx svg{min-width:560px}}.pbar2{display:flex;gap:2px;height:12px;border-radius:6px;overflow:hidden;margin:4px 0 10px}.pbar2 span{display:block}
 .sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:0}
 @media print{header,.tb,.row .btn,.row input,.row .chip{display:none!important}body{background:#fff}.card,table{box-shadow:none}}
+
+body.ld::before{content:'';position:fixed;top:0;left:0;right:0;height:3px;z-index:999;background:linear-gradient(90deg,transparent,var(--g),transparent);background-size:40% 100%;background-repeat:no-repeat;animation:ldb 1s linear infinite}
+@keyframes ldb{from{background-position:-40% 0}to{background-position:140% 0}}
+.updb{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:998;border:0;border-radius:999px;padding:11px 18px;background:#2b2b29;color:#fff;font:inherit;font-size:14px;box-shadow:0 6px 24px #0004;max-width:calc(100% - 32px)}
+
+/* --- мобильная версия руководителя: нижнее меню, компактные карточки, вкладки в одну строку --- */
+.bgs{display:none}.pbx{border:0;background:none;color:inherit;font:inherit;font-size:15px;padding:0 4px;margin-left:4px;cursor:pointer}
+@media(max-width:700px){
+ body.bnav main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+ body.bnav .bgt{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;display:grid!important;grid-template-columns:repeat(5,1fr);gap:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:#fffffff5;border-top:1px solid var(--ln);box-shadow:0 -4px 18px #2b2b2914;overflow:visible}
+ body.bnav .bgt button{flex-direction:column;gap:2px;padding:6px 2px!important;border:0!important;background:none!important;box-shadow:none!important;color:#7a766f!important;font-size:11px;font-weight:600;border-radius:12px;min-width:0}
+ body.bnav .bgt button .bgi{font-size:21px;line-height:1;filter:grayscale(1);opacity:.65}
+ body.bnav .bgt button.on{color:var(--tx)!important;background:var(--g2)!important}body.bnav .bgt button.on .bgi{filter:none;opacity:1}
+ body.bnav .bgt .bgf{display:none}body.bnav .bgt .bgs{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+ body.bnav .sbt{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box;margin:0 0 12px}body.bnav .sbt::-webkit-scrollbar{display:none}
+ body.bnav .sbt button{flex:1 0 auto;padding:9px 12px}
+ .row.tb.sub{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none}.row.tb.sub::-webkit-scrollbar{display:none}.row.tb.sub button{flex:0 0 auto}
+ .g2,.g2.hero{grid-template-columns:1fr 1fr;gap:8px}
+ .g2 .card{padding:11px 11px 11px 15px;font-size:12px}.g2 .card::before{width:4px}
+ .g2 .card b{font-size:18px;margin-top:4px;word-break:break-word}.g2.hero .card b{font-size:21px}
+ .g2 .card .dlt,.g2 .card small{font-size:10.5px}
+ main h4{margin:16px 2px 8px}
+ header{padding:8px 10px;gap:6px}header .btn.s{padding:7px 9px}header b{font-size:14px}header b small{font-size:11px}
+ .pbar{font-size:11.5px;padding:6px 10px}
+}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Niet Staff"></head><body><div id="app"></div>
@@ -171,7 +196,7 @@ function pushPanel(st){const[i,t]=PST[st];
  const tips=isIOS?[`${T('Нужен iOS 16.4 или новее')}`,`Safari → «${T('Поделиться')}» → «${T('На экран Домой')}», ${T('затем открывайте приложение только с иконки')}`,`${T('Настройки')} → ${T('Уведомления')} → Niet Café → ${T('включите «Заблокированный экран», «Баннеры» и «Звуки»')}`,`${T('Режим «Фокус» / «Не беспокоить» скрывает уведомления — добавьте Niet Café в разрешённые')}`]
   :[`${T('Настройки телефона')} → ${T('Приложения')} → Chrome → ${T('Уведомления')}: ${T('включены, «На заблокированном экране» — показывать всё')}`,`${T('Батарея')} → Chrome → «${T('Без ограничений')}» (${T('иначе телефон может «усыпить» уведомления')})`,`${T('Режим «Не беспокоить» глушит звук — добавьте Chrome в исключения')}`,`${T('Лучше установить приложение: меню Chrome ⋮ → «Установить приложение» / «Добавить на главный экран»')}`];
  return`<div class="psec ps-${st}"><b>${i} ${T(t)}</b><div class="row" style="gap:6px;margin:8px 0 4px;flex-wrap:wrap">${btn}</div><details><summary>${T('Не приходит на заблокированный экран?')}</summary><ol>${tips.map(x=>`<li>${x}</li>`).join('')}</ol></details></div>`}
-const pushBar=()=>{if(!me||!PUSHR.includes(me.role))return'';if(!pushOK())return isIOS&&!standalone?`<div class="pbar">${T('Для уведомлений на iPhone: «Поделиться» → «На экран Домой», затем откройте приложение с иконки')}</div>`:'';if(Notification.permission=='granted')return'';if(Notification.permission=='denied')return`<div class="pbar">${T('Уведомления заблокированы: разрешите их в настройках браузера для этого сайта')}</div>`;return`<div class="pbar" style="cursor:pointer" onclick="pushEnable()">🔔 ${T('Включить уведомления')}</div>`};
+const pushBar=()=>{if(!me||!PUSHR.includes(me.role))return'';if(!pushOK())return isIOS&&!standalone&&!lsG('pbx',0)?`<div class="pbar">${T('Для уведомлений на iPhone: «Поделиться» → «На экран Домой», затем откройте приложение с иконки')} <button class="pbx" onclick="localStorage.setItem('pbx','1');this.parentNode.remove()" aria-label="Скрыть">✕</button></div>`:'';if(Notification.permission=='granted')return'';if(Notification.permission=='denied')return`<div class="pbar">${T('Уведомления заблокированы: разрешите их в настройках браузера для этого сайта')}</div>`;return`<div class="pbar" style="cursor:pointer" onclick="pushEnable()">🔔 ${T('Включить уведомления')}</div>`};
 const dAgo=t=>{const m=Math.round((Date.now()-new Date(t))/6e4);return m<1?'только что':m<60?m+' мин назад':m<1440?Math.round(m/60)+' ч назад':Math.round(m/1440)+' дн назад'};
 const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* ---- язык ---- */
@@ -271,8 +296,12 @@ if(ch&&me.role=='waiter')ch.on('postgres_changes',{event:'*',schema:'public',tab
  .on('postgres_changes',{event:'*',schema:'public',table:'guest_orders'},p=>{if(p.eventType=='INSERT'){const k=p.new.kind=='delivery'?'delivery':p.new.kind=='take'?'take':'gorder';toast(k=='delivery'?'🛵 '+T('Новая доставка'):k=='take'?'🥡 '+T('Новый самовывоз'):`📱 ${lb(p.new.tbl)}: ${T('заказ с телефона')}`,k)};renderA()});
 if(ch)ch.subscribe();flush();pushSync();
 await bhLoad();render()}
-async function render(){const h={waiter:ww,kitchen:()=>kv('kitchen'),bar:()=>kv('bar'),store:sv,boss:bv}[me.role];let x;try{x=await h();LASTX=x}catch(e){if(!e.net)throw e;x=LASTX||`<p>${T('Нет связи. Попробуйте, когда появится интернет')}</p>`}const y=scrollY;$('#app').innerHTML=hd()+'<main>'+x+'</main>';scrollTo(0,y)}
-const renderA=()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;render()};
+let RG=0,RLT=0;
+async function render(){const g=++RG;clearTimeout(RLT);RLT=setTimeout(()=>{if(g==RG)document.body.classList.add('ld')},180);
+ try{const h={waiter:ww,kitchen:()=>kv('kitchen'),bar:()=>kv('bar'),store:sv,boss:bv}[me.role];let x;try{x=await h();LASTX=x}catch(e){if(!e.net)throw e;x=LASTX||`<p>${T('Нет связи. Попробуйте, когда появится интернет')}</p>`}
+ if(g!=RG)return;/* пока грузили, уже нажали другое — старый результат не показываем */document.body.classList.toggle('bnav',me.role=='boss');const y=scrollY;$('#app').innerHTML=hd()+'<main>'+x+'</main>';scrollTo(0,y)}
+ finally{if(g==RG){clearTimeout(RLT);document.body.classList.remove('ld')}}}
+let RAT=0;const renderA=()=>{clearTimeout(RAT);RAT=setTimeout(()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;render()},250)};
 addEventListener('online',()=>{flush();me&&me.role&&render()});addEventListener('offline',()=>{me&&me.role&&render()});
 let FL=0;
 const cid=()=>(window.crypto&&crypto.randomUUID?crypto.randomUUID():'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
@@ -284,12 +313,13 @@ setInterval(()=>{if(me&&['kitchen','bar'].includes(me.role)&&tab=='q')renderA()}
 /* ---- поиск блюда (официант) ---- */
 const nz=x=>String(x||'').toLowerCase().replace(/ё/g,'е').trim();
 const dishRow=(d,sh)=>{const cn=sh?(C.find(c=>c.id==d.cat_id)||{}).name:'',lb=E(d.name)+(cn?` <small style="color:var(--mu)">${E(cn)}</small>`:'');return d.stop?`<div class="dh stop"><div>${lb}</div><span>${T('стоп')}</span></div>`:`<div class="dh" onclick="add(${d.id})"><div>${lb}</div><span>${M(d.price)}</span></div>`};
+function setCat(id){cat=id;dsel=0;dq='';const L=$('#dl');if(!(me&&me.role=='waiter'&&tbl&&L))return render();L.innerHTML=menuList();document.querySelectorAll('.cats .cat').forEach(b=>b.classList.toggle('on',b.getAttribute('onclick')=='setCat('+id+')'));const i=$('#dq');if(i)i.value='';const x=$('#dqx');if(x)x.style.display='none'}
 const menuList=()=>{const k=nz(dq);if(!k){return DM.filter(d=>d.cat_id==cat).map(d=>dishRow(d)).join('')}const r=DM.filter(d=>nz(d.name).includes(k)||nz((C.find(c=>c.id==d.cat_id)||{}).name).includes(k));return r.length?r.map(d=>dishRow(d,1)).join(''):`<p style="padding:14px;color:var(--mu);margin:0">${T('Ничего не найдено')}</p>`};
 function dsearch(v){dq=v;const e=$('#dl');if(e)e.innerHTML=menuList();const x=$('#dqx');if(x)x.style.display=v?'':'none'}
 function dclear(){dq='';const i=$('#dq');if(i){i.value='';i.focus()}dsearch('')}
 const searchBox=()=>`<div class="srch"><input id="dq" type="search" inputmode="search" autocomplete="off" placeholder="🔍 ${T('Поиск блюда')}" value="${E(dq)}" oninput="dsearch(this.value)"><button id="dqx" class="btn o s" style="${dq?'':'display:none'}" onclick="dclear()">✕</button></div>`;
 const CI=n=>{n=(n||'').toLowerCase();const m=[['салат','🥗'],['закуск','🍗'],['суп','🍲'],['паста','🍝'],['куриц','🍗'],['горяч','🥘'],['рыб','🐟'],['стейк','🥩'],['мангал','🔥'],['гарнир','🍟'],['соус','🫙'],['выпеч','🥐'],['суши','🍣'],['ролл','🍣'],['бургер','🍔'],['чай','🍵'],['напит','🥤'],['десерт','🍰'],['кофе','☕']];return(m.find(x=>n.includes(x[0]))||[0,'🍽'])[1]};
-const chips=(a,f)=>`<div class="cats">${a.map(c=>`<button class="cat ${cat==c.id?'on':''}" style="--h:${(c.id*47)%360}" onclick="cat=${c.id};dsel=0;dq='';render()"><i>${CI(c.name)}</i><span>${E(c.name)}</span></button>`).join('')}${f||''}</div>`;
+const chips=(a,f)=>`<div class="cats">${a.map(c=>`<button class="cat ${cat==c.id?'on':''}" style="--h:${(c.id*47)%360}" onclick="setCat(${c.id})"><i>${CI(c.name)}</i><span>${E(c.name)}</span></button>`).join('')}${f||''}</div>`;
 
 /* ---- официант ---- */
 const ago=t=>{const m=Math.floor((Date.now()-new Date(t))/6e4);return m<1?'только что':m+' '+T('мин')};
@@ -304,12 +334,13 @@ const takeH=b=>{const tk=[...new Set(b.filter(n=>n>=100))].sort((x,y)=>x-y);retu
 async function newTake(){let b=[];try{b=(await q(sb.from('orders').select('tbl').eq('status','open'))).map(x=>x.tbl)}catch(e){if(!e.net)throw e}b=[...b,...QUE.map(x=>x.tbl)];let n=101;while(b.includes(n))n++;tbl=n;mix=0;dq='';render()}
 const srv=async id=>{await q(sb.from('order_items').update({status:'served'}).eq('id',id));render()};
 async function ww(){return wv()}   /* у официанта нет истории заказов: только открытые столы */
-async function wv(){let busy;try{busy=(await q(sb.from('orders').select('tbl').eq('status','open'))).map(x=>x.tbl);CACHE.busy=busy;ls.set('wcache',CACHE)}catch(e){if(!e.net)throw e;busy=CACHE.busy||[]}
+async function wv(){let busy;const pB=q(sb.from('orders').select('tbl').eq('status','open')),pA=Promise.all([q(sb.from('calls').select('*').eq('done',false).order('created')),q(sb.from('guest_orders').select('*').eq('status','new').order('created'))]),pO=tbl?q(sb.from('orders').select('*,order_items(*)').eq('tbl',tbl).eq('status','open').maybeSingle()):null;[pB,pA,pO].forEach(p=>p&&p.catch(()=>{}));
+try{busy=(await pB).map(x=>x.tbl);CACHE.busy=busy;ls.set('wcache',CACHE)}catch(e){if(!e.net)throw e;busy=CACHE.busy||[]}
 busy=[...new Set([...busy,...QUE.map(x=>x.tbl)])];
-try{[CALLS,GORD]=await Promise.all([q(sb.from('calls').select('*').eq('done',false).order('created')),q(sb.from('guest_orders').select('*').eq('status','new').order('created'))])}catch(e){if(!e.net)throw e}
+try{[CALLS,GORD]=await pA}catch(e){if(!e.net)throw e}
 const AT=[...CALLS.map(c=>c.tbl),...GORD.map(g=>g.tbl)],alH=alertsH();
 if(!tbl)return`<div class="hall"><div class="door"></div><div class="wall"></div><div class="dl">${T('вход')}</div>${HALL.map(([n,x,y,w,h])=>`<div class="tbl ${busy.includes(n)?'bz':''} ${AT.includes(n)?'call':''}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%" onclick="tbl=${n};mix=0;dq='';render()">${n}<small>${AT.includes(n)?(GORD.some(g=>g.tbl==n)?T('заказ'):T('зовёт')):busy.includes(n)?T('занят'):''}</small></div>`).join('')}</div>`+takeH(busy)+alH;
-let o;try{o=await q(sb.from('orders').select('*,order_items(*)').eq('tbl',tbl).eq('status','open').maybeSingle());CACHE.o[tbl]=o;ls.set('wcache',CACHE)}catch(e){if(!e.net)throw e;o=CACHE.o[tbl]}OCUR=o;IT=o?o.order_items.sort((a,b)=>a.id-b.id):[];const PQ=QUE.filter(x=>x.tbl==tbl);const{sub,sv,fee,tot,pct}=sums([...IT,...PQ],o);
+let o;try{o=await pO;CACHE.o[tbl]=o;ls.set('wcache',CACHE)}catch(e){if(!e.net)throw e;o=CACHE.o[tbl]}OCUR=o;IT=o?o.order_items.sort((a,b)=>a.id-b.id):[];const PQ=QUE.filter(x=>x.tbl==tbl);const{sub,sv,fee,tot,pct}=sums([...IT,...PQ],o);
 const menu=searchBox()+chips(C)+`<div class="list" id="dl">${menuList()}</div>`;
 const lst=PQ.map(i=>`<div class="dh pend"><div>${i.qty||1}× ${E(dn(i.dish_id))} <small>⏳ ${T('не отправлено')}</small></div></div>`).join('')+IT.map(i=>`<div class="dh" onclick="nt(${i.id})"><div>${i.qty}× ${E(dn(i.dish_id))} <small>${T(SN[i.status]||'')}</small>${i.note?`<span class="note">${E(i.note)}</span>`:''}</div>${i.status=='new'?`<button class="btn r s" onclick="event.stopPropagation();del(${i.id})">×</button>`:''}${i.status=='ready'?`<button class="btn s" onclick="event.stopPropagation();srv(${i.id})">${T('Подано')}</button>`:''}</div>`).join('')||(PQ.length?'':T('Пусто'));
 const payH=IT.length||PQ.length?`<p><small>${T('Нажмите на блюдо в заказе, чтобы добавить комментарий')}</small></p><p>${T('Сумма')}: ${M(sub)}${tbl<100?`<br>${T('Обслуживание')} ${pct}%: ${M(sv)}`:''}${tbl>=200?`<br>${T('Доставка')}: ${fee?M(fee):T('бесплатно')}${fee?` <small>(${T('бесплатно')} от ${M(DFREE)})</small>`:''}`:''}</p><h4>${T('Итого')}: ${M(tot)}</h4>
@@ -319,10 +350,10 @@ ${mix?`<div class="row"><input id="pc" type="number" placeholder="${T('Нали�
 const doneB=o&&o.done_at?`<span class="chip on">✅ ${T(tbl>=200?'Доставлен':'Выдан')} ${hm(o.done_at)}</span><button class="btn o s" onclick="doneSet(${o.id},0)">${T('Отменить')}</button>`:o?`<button class="btn gr" onclick="doneSet(${o.id},1)">✅ ${T(tbl>=200?'Доставлено':'Выдан гостю')}</button>`:'';
 const cour=tbl>=200&&o?`<div class="row">${o.done_at?'':o.out_at?`<span class="chip on">🛵 ${T('В пути с')} ${hm(o.out_at)}</span><button class="btn o s" onclick="outSet(${o.id},0)">${T('Отменить')}</button>`:`<button class="btn d" onclick="outSet(${o.id},1)">🛵 ${T('Передан курьеру')}</button>`}${doneB}<small style="color:var(--mu);flex-basis:100%">${T('«Передан курьеру» — гость видит «В пути». «Доставлено» — гость видит «Доставлен» и может оценить заказ. Гость тоже может сам нажать «Получил».')}</small></div>`
  :tbl>=100&&tbl<200&&o&&IT.length?`<div class="row">${doneB}<small style="color:var(--mu);flex-basis:100%">${T('Когда отдали заказ — нажмите «Выдан гостю»: гость увидит это и сможет оценить заказ.')}</small></div>`:'';
-return alH+`<button class="btn o s" onclick="tbl=0;render()">${T('← Столы')}</button><h3>${lb(tbl)}</h3>${cliH(o)}${cour}<div class="two"><div>${menu}</div><div class="card">${lst}${payH}</div></div>`}
+return alH+`<button class="btn o s" onclick="tbl=0;render()">${T('← Столы')}</button><h3>${lb(tbl)}</h3>${cliH(o)}${cour}<div class="two"><div>${menu}</div><div class="card" id="olst">${lst}${payH}</div></div>`}
 const doneSet=async(id,on)=>{const{error}=await sb.from('orders').update({done_at:on?new Date().toISOString():null}).eq('id',id);if(error)return alert(/done_at/.test(error.message)?T('Выполните в Supabase файл 34_stock_reviews_clients.sql'):error.message);toast(on?'✅ '+T(tbl>=200?'Доставлено':'Выдан гостю'):T('Отменено'));render()};
 const outSet=async(id,on)=>{const{error}=await sb.from('orders').update({out_at:on?new Date().toISOString():null}).eq('id',id);if(error)return alert(/out_at/.test(error.message)?'Выполните в Supabase файл 23_guest_status.sql':error.message);toast(on?'🛵 '+T('Передан курьеру'):T('Отменено'));render()};
-async function add(id){const it={tbl,dish_id:id,station:D.find(x=>x.id==id).station,qty:1,cid:cid()};if(!navigator.onLine){QUE.push(it);ls.set('que',QUE);return render()}try{await addNow(it)}catch(e){if(!e.net)throw e;QUE.push(it);ls.set('que',QUE)}render()}
+async function add(id){const it={tbl,dish_id:id,station:D.find(x=>x.id==id).station,qty:1,cid:cid()};const L=$('#olst');if(L)L.insertAdjacentHTML('afterbegin',`<div class="dh pend"><div>1× ${E(dn(id))} <small>⏳ ${T('отправляется')}</small></div></div>`);if(!navigator.onLine){QUE.push(it);ls.set('que',QUE);return render()}try{await addNow(it)}catch(e){if(!e.net)throw e;QUE.push(it);ls.set('que',QUE)}render()}
 async function addNow(it){const tbl=it.tbl;let o=await q(sb.from('orders').select('id').eq('tbl',tbl).eq('status','open').maybeSingle());if(!o)o=await q(sb.from('orders').insert({tbl,kind:tbl>=100?'take':'dine'}).select().single());await insI({order_id:o.id,tbl,dish_id:it.dish_id,station:it.station,cid:it.cid})}
 const del=async id=>{await q(sb.from('order_items').delete().eq('id',id));render()};
 async function nt(id){const r=prompt(T('Комментарий для кухни (например: без лука)'),(IT.find(x=>x.id==id)||{}).note||'');if(r===null)return;await q(sb.from('order_items').update({note:r.trim()||null}).eq('id',id));render()}
@@ -956,12 +987,13 @@ const XL=(()=>{
 const xlNow=()=>new Date().toLocaleString('ru',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 /* ---- руководитель ---- */
 /* руководитель: 5 разделов, внутри — вкладки (раздел помнит последнюю открытую вкладку) */
+const BGS={rp:'Отчёты',mn:'Меню',or:'Заказы',wh:'Склад',us:'Команда'};
 const BG=[['rp','📊','Отчёты',[['rp','Отчёты'],['zs','Смены (Z-отчёты)']]],['mn','🍽','Меню',[['mn','Блюда']]],['or','🧾','Заказы и гости',[['or','Заказы'],['cl','Клиенты'],['gs','Гостевое меню']]],['wh','📦','Склад',[['wh','Склад']]],['us','👥','Команда и затраты',[['us','Сотрудники'],['sx','Затраты'],['pr','Печать чеков']]]];
 let BSUB={};try{BSUB=JSON.parse(localStorage.getItem('bsub')||'{}')}catch(e){}
 function bgo(g){const G=BG.find(x=>x[0]==g),k=BSUB[g]&&G[3].some(x=>x[0]==BSUB[g])?BSUB[g]:G[3][0][0];tab=k;dsel=0;render()}
 function bsub(k){tab=k;dsel=0;const G=BG.find(x=>x[3].some(y=>y[0]==k));if(G){BSUB[G[0]]=k;try{localStorage.setItem('bsub',JSON.stringify(BSUB))}catch(e){}}render()}
 function btabs(){tab=tab||'rp';if(tab=='tk'||tab=='kl')tab='mn';if(tab=='in'||tab=='wo'){WHM=tab;tab='wh'}let G=BG.find(x=>x[3].some(y=>y[0]==tab));if(!G){G=BG[0];tab='rp'}BSUB[G[0]]=tab;
- return`<div class="row tb bgt">${BG.map(([g,i,n])=>`<button class="${G[0]==g?'on':''}" onclick="bgo('${g}')"><span class="bgi">${i}</span>${T(n)}</button>`).join('')}</div>${G[3].length>1?`<div class="sbt">${G[3].map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="bsub('${k}')">${T(n)}</button>`).join('')}</div>`:''}`}
+ return`<nav class="row tb bgt">${BG.map(([g,i,n])=>`<button class="${G[0]==g?'on':''}" onclick="bgo('${g}')"><span class="bgi">${i}</span><span class="bgf">${T(n)}</span><span class="bgs">${T(BGS[g])}</span></button>`).join('')}</nav>${G[3].length>1?`<div class="sbt">${G[3].map(([k,n])=>`<button class="${tab==k?'on':''}" onclick="bsub('${k}')">${T(n)}</button>`).join('')}</div>`:''}`}
 async function bv(){const h=btabs();
 return h+await({rp:rep,or:()=>histV('boss'),cl:clv,mn:mmv,gs:gsv,wh:async()=>{const[P]=await Promise.all([q(sb.from('products').select('*').order('name')),loadPV(),astLoad(),loadD()]);return whV(P)},us:usr,sx,pr:prV,zs:shV})[tab]()}
 const bars=(a,lab)=>{const mx=Math.max(1,...a.map(x=>x[1]));return a.map(([k,v])=>`<div class="br"><span>${lab(k)}</span><div class="bar" style="width:${v/mx*100}%"></div><small>${M(v)}</small></div>`).join('')};
@@ -1158,4 +1190,6 @@ return`${bhCard()}<div class="card">${S.filter(x=>!/^migr_|^open_min$|^close_min
 const setv=async(k,v)=>{await q(sb.from('settings').upsert({key:k,val:+v}));if(k=='service')SV=+v;if(k=='delivery_fee')DFEE=+v;if(k=='delivery_free')DFREE=+v;render()};
 init();
 if('serviceWorker' in navigator&&location.protocol=='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+/* вышла новая версия приложения — предложить обновить (страница открывается мгновенно из кэша) */
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(!(e.data&&e.data.upd)||document.getElementById('updb'))return;const b=document.createElement('button');b.id='updb';b.className='updb';b.textContent='🔄 '+T('Вышло обновление — нажмите, чтобы обновить');b.onclick=()=>location.reload();document.body.appendChild(b)});
 </script></body></html>

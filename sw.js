@@ -1,5 +1,5 @@
 /* Niet Café: работа без интернета. При изменении файлов сайта увеличьте номер версии. */
-const V = 'niet-v25';
+const V = 'niet-v26';
 const SHELL = ['./index.html', './guest.html', './order.html', './manifest.json', './guest.webmanifest', './icon-192.png', './icon-512.png', './logo.png', './logo-receipt.png', './qr.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'];
 
@@ -14,6 +14,24 @@ self.addEventListener('activate', e => {
 const put = (req, res) => { if (res && res.ok) { const c = res.clone(); caches.open(V).then(x => x.put(req, c)); } return res; };
 const netFirst = req => fetch(req).then(r => put(req, r)).catch(() => caches.match(req, { ignoreSearch: req.mode === 'navigate' }));
 const cacheFirst = req => caches.match(req).then(r => r || fetch(req).then(x => put(req, x)));
+// страницы сайта: сразу из кэша (мгновенно, даже если сервер Render «просыпается»), а в фоне — проверка новой версии
+const tell = msg => self.clients.matchAll({ type: 'window' }).then(ws => ws.forEach(w => { try { w.postMessage(msg); } catch (_) {} }));
+const swr = (e, req) => {
+  const key = req.mode === 'navigate' ? new Request(new URL(req.url).pathname.replace(/\/$/, '/index.html') ) : req;
+  const net = fetch(req).then(async r => {
+    if (r && r.ok && r.type === 'basic') {
+      const old = await caches.match(key, { ignoreSearch: true });
+      const c = await caches.open(V); await c.put(key, r.clone());
+      if (old && /html/.test(r.headers.get('content-type') || '')) {
+        const [a, b] = await Promise.all([old.text(), r.clone().text()]);
+        if (a !== b) tell({ upd: 1 });
+      }
+    }
+    return r;
+  });
+  e.waitUntil(net.catch(() => {}));
+  return caches.match(key, { ignoreSearch: true }).then(hit => hit || net.catch(() => caches.match(req, { ignoreSearch: true })));
+};
 
 self.addEventListener('fetch', e => {
   const req = e.request;
@@ -27,8 +45,11 @@ self.addEventListener('fetch', e => {
   // меню для гостей можно смотреть без сети
   if (/\/rest\/v1\/(cats|dishes|links|settings)\b/.test(u.pathname)) return e.respondWith(netFirst(req));
   if (u.pathname.includes('/rest/v1/') || u.pathname.includes('/rpc/')) return; // рабочие данные — только из сети
-  // страницы, иконки, шрифты, библиотека
-  if (u.origin === location.origin || /cdn\.jsdelivr|fonts\.(googleapis|gstatic)/.test(u.host)) e.respondWith(netFirst(req));
+  // библиотека Supabase (версия закреплена) и шрифты — из кэша
+  if (/cdn\.jsdelivr|fonts\.gstatic/.test(u.host)) return e.respondWith(cacheFirst(req));
+  if (/fonts\.googleapis/.test(u.host)) return e.respondWith(netFirst(req));
+  // страницы и файлы сайта — мгновенно из кэша + фоновое обновление (sw.js браузер всегда берёт из сети)
+  if (u.origin === location.origin) e.respondWith(swr(e, req));
 });
 
 // ---- Push-уведомления ----
