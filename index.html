@@ -436,7 +436,7 @@ return`<div class="row"><span class="chip">${T('Заказов')}: ${G.length}</
 return`<div class="card tk ${mn>=15?'late':''}"><div class="dh" onclick="tgE(${oid})"><div><b style="font-size:20px">${lb(a[0].tbl)}</b> <small class="${mn>=15?'bad':''}">${hm(a[0].created)} · ${mn} ${T('мин')}</small></div><div><span class="chip ${nw?'bad':''}">${a.length} ${T('поз.')}${nw?' · '+nw+' '+T('новых'):''}</span> ${op?'▲':'▼'}</div></div>${op?`<div class="row" style="margin:6px 0">${nw?`<button class="btn o s" onclick="stAll(${oid},'${s}','accepted')">${T('Принять всё')}</button>`:''}<button class="btn s" onclick="stAll(${oid},'${s}','ready')">${T('Всё готово')}</button></div>`+a.map(i=>`<div class="it ${i.status!='new'?'cook':''}"><div><b class="pl" onclick="tcard(${i.dish_id})">${i.qty}× ${E(dn(i.dish_id))}</b>${+i.promo_free>0?` <small>🎁 ${i.promo_free} ${T('в подарок')}</small>`:''}${setC(i.dish_id)}${i.note?`<span class="note">${E(i.note)}</span>`:''}<small>${T(SN[i.status]||'')}</small></div><div class="row" style="margin:0;flex-wrap:nowrap">${i.status=='new'?`<button class="btn o" onclick="st(${i.id},'accepted')">${T('Принято')}</button>`:''}<button class="btn" onclick="st(${i.id},'ready')">${T('Готово')}</button></div></div>`).join(''):''}</div>`}).join('')}</div>`}
 const mdl=h=>{document.querySelectorAll('.mo').forEach(x=>x.remove());const d=document.createElement('div');d.className='mo';d.onclick=e=>{if(e.target==d)d.remove()};d.innerHTML=`<div class="mb">${h}</div>`;document.body.appendChild(d)};
 const mdH=t=>`<div class="row" style="justify-content:space-between;margin:0"><h3 style="margin:0">${E(t)}</h3><button class="btn o s" onclick="this.closest('.mo').remove()">✕</button></div>`;
-async function tcard(id){const R=(await q(sb.rpc('tech_cards'))).filter(x=>x.dish_id==id);mdl(mdH(dn(id))+setC(id,1)+(R.length?tcT(id,R):`<p>${T('Техкарта ещё не заполнена')}</p>`))}
+async function tcard(id){const R=(await ktR()).filter(x=>x.dish_id==id);mdl(mdH(dn(id))+setC(id,1)+(R.length?tcT(id,R):`<p>${T('Техкарта ещё не заполнена')}</p>`)+ktBtn(D.find(x=>x.id==id)))}
 async function dinfo(id){const[H,N]=await Promise.all([q(sb.from('price_history').select('*').eq('kind','dish').eq('item_id',id).order('t',{ascending:false}).limit(50)),q(sb.rpc('staff_names'))]);const nm=u=>(N.find(x=>x.id==u)||{}).name||'—';mdl(mdH(dn(id)+' · '+T('История цен'))+(H.length?`<table><tr><th>${T('Дата')}</th><th>${T('Было → Стало')}</th><th>${T('Кто')}</th></tr>${H.map(h=>`<tr><td>${fdt(h.t)}</td><td>${h.old_price==null?T('начальная цена')+' → '+M(h.price):M(h.old_price)+' → <b>'+M(h.price)+'</b>'}</td><td>${E(nm(h.uid))}</td></tr>`).join('')}</table><p><small>${T('Прошлые заказы и отчёты считаются по цене на момент заказа')}</small></p>`:`<p>${T('Изменений цены не было')}</p>`))}
 const st=async(id,s)=>{await q(sb.from('order_items').update({status:s}).eq('id',id));render()};
 async function slv(s){const f=d=>d.station==s,h=catRow(f);return h+`<p><small>${T('Отмеченные блюда официант не сможет добавить в заказ')}</small></p><div class="card">${DM.filter(d=>d.cat_id==cat&&f(d)).map(d=>`<label class="dh"><div>${E(d.name)}</div><div class="${d.stop?'bad':''}">${d.stop&&d.stop_auto?`<small>⛔ ${T('авто: закончился продукт')}</small> `:''}${T('стоп')} <input type="checkbox" ${d.stop?'checked':''} onchange="setStop(${d.id},this.checked)"></div></label>`).join('')}</div>`}
@@ -445,8 +445,8 @@ const setStop=async(id,v)=>{await q(sb.rpc('set_stop',{d:id,s:v}));await loadD()
 /* ---- техкарты ---- */
 const U=(n,u)=>{n=+n;if(u=='кг'&&n<1)return +(n*1000).toFixed(1)+' г';if(u=='л'&&n<1)return +(n*1000).toFixed(1)+' мл';return +n.toFixed(3)+' '+u};
 const catRow=f=>{if(!DM.some(d=>d.cat_id==cat&&f(d)))cat=(DM.find(f)||{}).cat_id||0;return chips(C.filter(c=>DM.some(d=>d.cat_id==c.id&&f(d))))};
-async function tkv(s){const R=await q(sb.rpc('tech_cards')),f=d=>d.station==s,h=catRow(f);
-return h+DM.filter(d=>d.cat_id==cat&&f(d)).map(d=>{const r=R.filter(x=>x.dish_id==d.id);return`<div class="card"><div class="dh" onclick="dsel=dsel==${d.id}?0:${d.id};render()"><b>${E(d.name)}</b><small class="${r.length?'ok':'bad'}">${r.length?r.length+' '+T('прод.'):T('нет техкарты')}</small></div>${dsel==d.id?setC(d.id,1)+(r.length?tcT(d.id,r):`<p>${T('Техкарта ещё не заполнена')}</p>`):''}</div>`}).join('')}
+async function tkv(s){const R=await ktR(),f=d=>d.station==s,h=catRow(f);
+return h+DM.filter(d=>d.cat_id==cat&&f(d)).map(d=>{const r=R.filter(x=>x.dish_id==d.id);return`<div class="card"><div class="dh" onclick="dsel=dsel==${d.id}?0:${d.id};render()"><b>${E(d.name)}</b><small class="${r.length?'ok':'bad'}">${r.length?r.length+' '+T('прод.'):T('нет техкарты')}</small></div>${dsel==d.id?setC(d.id,1)+(r.length?tcT(d.id,r):`<p>${T('Техкарта ещё не заполнена')}</p>`)+ktBtn(d):''}</div>`}).join('')}
 /* ---- руководитель: «Блюда» — меню, техкарты и калькуляция на одном экране ----
    Сверху статистика, ниже список блюд. Нажатие на блюдо открывает карточку: цена, техкарта, расчёт, описание, КБЖУ.
    Изменения копятся в карточке и записываются только кнопкой «Сохранить»; после сохранения карточка закрывается. */
@@ -508,6 +508,7 @@ function mmDraw(){const d=MED.d,PP=mmPP(),so=v=>[['kitchen','Кухня'],['bar'
  ${d.batch_n>0?`<p class="mmhint">Вносите продукты <b>на всю кастрюлю</b>. Система сама разделит их на порции и сохранит техкарту на 1 порцию — склад списывается при продаже каждой порции, как обычно.</p>`:''}
  <div class="mmcl"><label>🧮 Калькулятор: сколько продуктов на <input type="number" min="0" step="1" value="${MED.cn||''}" placeholder="N" style="width:70px" oninput="MED.cn=+this.value||0;mmCL()"> порций</label><div id="mmcl"></div></div>
  <small style="color:var(--mu)">Нетто — в единицах продукта: для «кг» 0.15 = 150 г, для «шт» 1 = одна штука. Со склада списывается брутто (нетто ÷ (1 − потеря)). Потеря меняется в карточке продукта (Склад → нажмите на продукт).</small>${d.is_set?'</div>':''}
+ ${MED.id?`<details class="mmd" ontoggle="if(this.open)mmLog(${MED.id})"><summary>🕘 Изменения техкарты (кто и когда)</summary><div id="mmlog"><small style="color:var(--mu)">Загружаю…</small></div></details>`:''}
  <details class="mmd" ${!MED.id?'open':''}><summary>Для гостей: фото, описание, метки</summary><div class="row" style="align-items:center">${d.photo?`<img src="${E(d.photo)}" alt="" class="mmph">`:''}<label class="btn o s">${d.photo?'Заменить фото':'＋ Фото'}<input type="file" accept="image/*" hidden onchange="mmPh(this.files[0])"></label>${d.photo?`<button class="btn r s" onclick="MED.d.photo=null;mmDraw()">Убрать фото</button>`:''}</div>
   <label class="mml">Описание (рус.)<textarea rows="2" oninput="mmF('descr',this.value.trim()||null)">${E(d.descr||'')}</textarea></label><label class="mml">Сипаттама (қаз.)<textarea rows="2" oninput="mmF('descr_kz',this.value.trim()||null)">${E(d.descr_kz||'')}</textarea></label>
   <div class="row">${[['new','🆕 Новинка'],['hit','⭐ Хит'],['spicy','🌶 Острое']].map(([k,l])=>`<label class="chip"><input type="checkbox" ${tg.includes(k)?'checked':''} onchange="mmTag('${k}',this.checked)"> ${l}</label>`).join('')}</div><small style="color:var(--mu)">Состав гость видит из техкарты (без граммовки).</small></details>
@@ -642,6 +643,45 @@ async function pmSave(){const p=PME;if(!String(p.name||'').trim())return alert('
  if(error)return alert(/promos/.test(error.message)?'Выполните в Supabase файл 43_sets_promos.sql':error.message);toast('✅ Акция сохранена');await loadD();pmList()}
 async function pmTg(id){const p=PRM.find(x=>x.id==id);if(!p)return;const{error}=await sb.from('promos').update({active:!p.active}).eq('id',id);if(error)return alert(error.message);await loadD();pmList()}
 async function pmDel(id){if(!confirm('Удалить акцию? Подарки в уже пробитых заказах останутся.'))return;const{error}=await sb.from('promos').delete().eq('id',id);if(error)return alert(error.message);await loadD();pmList()}
+
+/* ---- повар/бармен: упрощённое изменение техкарты (без цен) ----
+   Количество вводится в граммах / мл / штуках, в базу уходит в единицах продукта. Сохраняет функция kt_save. */
+let KTE=null,KTP=null;
+const ktR=async()=>{const r=await sb.rpc('kt_cards');if(!r.error)return r.data||[];return await q(sb.rpc('tech_cards'))};
+const ktU=u=>{u=String(u||'').toLowerCase().trim();return u=='кг'||u=='kg'?['г',1000]:u=='л'||u=='l'?['мл',1000]:[u||'шт',1]};
+const ktN=x=>+(+x).toFixed(3);
+const ktBtn=d=>!d||d.is_set||!me||!['kitchen','bar','boss'].includes(me.role)?'':`<button class="btn o s" style="margin-top:6px" onclick="event.stopPropagation();ktEd(${d.id})">✏️ ${T('Изменить техкарту')}</button>`;
+async function ktEd(id){const d=D.find(x=>x.id==id);if(!d)return;
+ try{const[R,P]=await Promise.all([ktR(),KTP?Promise.resolve(KTP):sb.rpc('kt_products').then(r=>{if(r.error)throw r.error;return r.data||[]})]);KTP=P;
+  const rows=R.filter(x=>x.dish_id==id).map(x=>{const[l,k]=ktU(x.unit);return{product_id:x.product_id,name:x.product,unit:x.unit,v:ktN(x.qty*k)}});
+  if(rows.some(r=>!r.product_id))return alert(T('Выполните в Supabase файл 47_kitchen_techcards.sql'));
+  KTE={id,rows,orig:JSON.stringify(rows.map(r=>[r.product_id,r.v])),out:d.out_g||'',oout:d.out_g||'',busy:0};ktDraw()}
+ catch(e){alert(/kt_products|function/i.test(e.message||'')?T('Выполните в Supabase файл 47_kitchen_techcards.sql'):(e.message||e))}}
+function ktDraw(){const K=KTE;mdl(mdH('✏️ '+dn(K.id))+`<div class="kte">
+ <label class="mml">${T('Выход порции, г')}<input type="number" min="1" step="1" value="${K.out}" placeholder="${T('напр.')} 300" style="width:120px" oninput="KTE.out=this.value"></label>
+ <table class="mmtc"><tr><th>${T('Продукт')}</th><th>${T('На 1 порцию')}</th><th></th></tr>${K.rows.map((r,i)=>`<tr><td style="text-align:left">${E(r.name)}</td><td><input type="number" min="0" step="any" value="${r.v}" style="width:90px" oninput="KTE.rows[${i}].v=this.value===''?'':+this.value"> <small>${E(ktU(r.unit)[0])}</small></td><td><button class="btn r s" onclick="KTE.rows.splice(${i},1);ktDraw()">×</button></td></tr>`).join('')||`<tr><td colspan="3" style="text-align:center;color:var(--mu)">${T('Продуктов пока нет — добавьте ниже')}</td></tr>`}</table>
+ <div class="row mmadd"><input id="ktps" type="search" placeholder="🔍 ${T('найти продукт')}" oninput="ktPF(this.value)" style="width:150px"><select id="ktp" style="flex:1;min-width:150px" onchange="ktPU()"></select><input id="ktn" type="number" min="0" step="any" placeholder="${T('кол-во')}" style="width:80px" onkeydown="if(event.key=='Enter')ktAdd()"><small id="ktu"></small><button class="btn s" onclick="ktAdd()">${T('Добавить')}</button></div>
+ <small style="color:var(--mu)">${T('Граммы и мл — чистый вес продукта в готовом блюде (после очистки). Штуки — сколько штук на 1 порцию. Цены и себестоимость пересчитаются сами; руководитель увидит, что вы изменили.')}</small>
+ <div class="row" style="margin-top:12px"><span style="flex:1"></span><button class="btn o" onclick="this.closest('.mo').remove();KTE=null">${T('Отмена')}</button><button class="btn" id="ktsv" onclick="ktSave()">💾 ${T('Сохранить')}</button></div></div>`);ktPF('')}
+function ktPF(v){const k=nq(v),s=$('#ktp');if(!s||!KTP)return;const used=KTE.rows.map(r=>r.product_id),st=(D.find(x=>x.id==KTE.id)||{}).station;
+ const L=KTP.filter(p=>!used.includes(p.id)&&(!k||nq(p.name).includes(k))).sort((a,b)=>(a.station==st?0:1)-(b.station==st?0:1));
+ s.innerHTML=`<option value="">— ${T('продукт')} —</option>`+L.map(p=>`<option value="${p.id}">${E(p.name)} (${E(ktU(p.unit)[0])})</option>`).join('');if(k&&L.length)s.selectedIndex=1;ktPU()}
+function ktPU(){const p=(KTP||[]).find(x=>x.id==+($('#ktp')||{}).value),u=$('#ktu');if(u)u.textContent=p?ktU(p.unit)[0]:''}
+function ktAdd(){const id=+($('#ktp')||{}).value,n=+($('#ktn')||{}).value,p=(KTP||[]).find(x=>x.id==id);if(!p)return alert(T('Выберите продукт'));if(!(n>0))return alert(T('Введите количество'));
+ KTE.rows.push({product_id:p.id,name:p.name,unit:p.unit,v:n});ktDraw();setTimeout(()=>{const x=$('#ktps');x&&x.focus()},30)}
+async function ktSave(){const K=KTE;if(!K||K.busy)return;if(K.rows.some(r=>!(+r.v>0)))return alert(T('Количество каждого продукта должно быть больше 0'));
+ const out=Math.round(+K.out)||null;if(JSON.stringify(K.rows.map(r=>[r.product_id,+r.v]))===K.orig&&String(out||'')===String(K.oout||'')){$('.mo')&&$('.mo').remove();KTE=null;return}
+ if(!K.rows.length&&!confirm(T('Техкарта будет пустой — склад по этому блюду списываться не будет. Сохранить?')))return;
+ K.busy=1;const b=$('#ktsv');if(b)b.textContent=T('Сохраняю…');
+ const{data,error}=await sb.rpc('kt_save',{p_dish:K.id,p_items:K.rows.map(r=>({product_id:r.product_id,qty:+r.v/ktU(r.unit)[1]})),p_out_g:out});
+ if(error){K.busy=0;if(b)b.textContent='💾 '+T('Сохранить');return alert(/kt_save|function/i.test(error.message)?T('Выполните в Supabase файл 47_kitchen_techcards.sql'):error.message)}
+ $('.mo')&&$('.mo').remove();KTE=null;toast('✅ '+T('Техкарта сохранена')+(data?` (${data})`:''));await loadD();render()}
+/* руководитель: журнал изменений техкарты в карточке блюда */
+async function mmLog(id){const el=$('#mmlog');if(!el||!id)return;try{const[L,N]=await Promise.all([sb.from('techcard_log').select('*').eq('dish_id',id).order('t',{ascending:false}).limit(30).then(r=>r.error?null:r.data),sb.rpc('staff_names').then(r=>r.data||[],()=>[])]);
+ if(!L){el.parentNode.remove();return}if(!L.length){el.innerHTML='<small style="color:var(--mu)">Изменений пока не было</small>';return}
+ const nm=u=>(N.find(x=>x.id==u)||{}).name||'—',f=(q,u)=>q==null?'—':(u=='г'?Math.round(q)+' г':ktN(q*ktU(u)[1])+' '+ktU(u)[0]);
+ el.innerHTML=`<table class="mmtc"><tr><th>Когда</th><th>Кто</th><th>Что</th><th>Было → стало</th></tr>${L.map(r=>`<tr><td>${fdt(r.t)}</td><td>${E(nm(r.uid))}</td><td style="text-align:left">${E(r.what||'')}</td><td>${r.old_qty==null?'➕ ':r.new_qty==null?'➖ ':''}${f(r.old_qty,r.unit)} → <b>${f(r.new_qty,r.unit)}</b></td></tr>`).join('')}</table>`}catch(e){}}
+Object.assign(KZ,{'Изменить техкарту':'Техкартаны өзгерту','Выход порции, г':'Порция шығымы, г','Добавить':'Қосу','Отмена':'Болдырмау','Сохранить':'Сақтау','Сохраняю…':'Сақталуда…','Техкарта сохранена':'Техкарта сақталды','найти продукт':'өнімді іздеу','продукт':'өнім','кол-во':'саны','напр.':'мыс.','Выберите продукт':'Өнімді таңдаңыз','Введите количество':'Санын енгізіңіз'});
 
 /* ---- калькуляция всего меню ---- */
 const rd=async(d,p)=>{await q(sb.from('recipes').delete().eq('dish_id',d).eq('product_id',p));render()};
