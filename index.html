@@ -225,7 +225,7 @@ const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 /* ---- язык ---- */
 let LG='ru';try{LG=localStorage.getItem('lg')||'ru'}catch(e){}
 const KZ={'Официант':'Даяшы','Кухня':'Ас үй','Склад':'Қойма','Руководитель':'Басшы','Без роли':'Рөлсіз','Выйти':'Шығу','Логин':'Логин','Пароль':'Құпиясөз','Войти':'Кіру','Неверный логин или пароль':'Логин немесе құпиясөз қате','Роль не назначена. Обратитесь к руководителю.':'Рөл тағайындалмаған. Басшыға хабарласыңыз.',
-'Стол':'Үстел','← Столы':'← Үстелдер','вход':'кіреберіс','занят':'бос емес','стоп':'стоп','Пусто':'Бос','Сумма':'Сома','Обслуживание':'Қызмет көрсету','Итого':'Барлығы','Пречек':'Алдын ала чек','Перенести стол':'Үстелді ауыстыру','Наличные':'Қолма-қол','Карта':'Карта','Смешанная':'Аралас','Оплатить':'Төлеу',
+'Стол':'Үстел','← Столы':'← Үстелдер','вход':'кіреберіс','занят':'бос емес','стоп':'стоп','Пусто':'Бос','Сумма':'Сома','Обслуживание':'Қызмет көрсету','Итого':'Барлығы','Пречек':'Алдын ала чек','средняя цена':'орташа баға','Перенести стол':'Үстелді ауыстыру','Наличные':'Қолма-қол','Карта':'Карта','Смешанная':'Аралас','Оплатить':'Төлеу',
 'новый':'жаңа','готовится':'дайындалуда','готово':'дайын','Готовится':'Дайындалуда','Готово':'Дайын','Заказы':'Тапсырыстар','Техкарты':'Техкарталар','Стоп-лист':'Стоп-тізім','Заказов нет':'Тапсырыс жоқ','мин':'мин',
 'Комментарий для кухни (например: без лука)':'Ас үйге түсініктеме (мысалы: пиязсыз)','Нажмите на блюдо в заказе, чтобы добавить комментарий':'Түсініктеме қосу үшін тапсырыстағы тағамды басыңыз','Закрыть стол':'Үстелді жабу','Сумма оплат должна быть':'Төлем сомасы болуы керек','На какой стол перенести? (1–9)':'Қай үстелге ауыстыру? (1–9)','занят. Объединить заказы?':'бос емес. Тапсырыстарды біріктіру керек пе?','Разрешите всплывающие окна':'Қалқымалы терезелерге рұқсат беріңіз',
 'Отмеченные блюда официант не сможет добавить в заказ':'Белгіленген тағамдарды даяшы тапсырысқа қоса алмайды','Продукт':'Өнім','На 1 порцию':'1 порцияға','Техкарта ещё не заполнена':'Техкарта әлі толтырылмаған','нет техкарты':'техкарта жоқ','прод.':'өнім',
@@ -349,7 +349,7 @@ let FL=0;
 const cid=()=>(window.crypto&&crypto.randomUUID?crypto.randomUUID():'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
 const insI=row=>q(sb.from('order_items').upsert(row,{onConflict:'cid',ignoreDuplicates:true}));
 async function flush(){if(FL||!navigator.onLine||!QUE.length)return;FL=1;const done=new Set();try{QUE.forEach(i=>{i.cid=i.cid||cid()});ls.set('que',QUE);
- for(const it of QUE.slice()){try{let o=await q(sb.from('orders').select('id').eq('tbl',it.tbl).eq('status','open').maybeSingle());if(!o)o=await q(sb.from('orders').insert({tbl:it.tbl,kind:it.tbl>=200?'delivery':it.tbl>=100?'take':'dine'}).select().single());await insI({order_id:o.id,tbl:it.tbl,dish_id:it.dish_id,station:it.station,qty:it.qty||1,note:it.note||null,cid:it.cid});done.add(it.cid)}catch(e){}}
+ for(const it of QUE.slice()){try{await addNow(it,1);done.add(it.cid)}catch(e){}}
  QUE=QUE.filter(x=>!done.has(x.cid));ls.set('que',QUE)}finally{FL=0}me&&me.role&&render()}
 setInterval(()=>{if(me&&['kitchen','bar'].includes(me.role)&&tab=='q')renderA()},60000);
 /* ---- поиск блюда (официант) ---- */
@@ -405,10 +405,12 @@ const outSet=async(id,on)=>{const{error}=await sb.from('orders').update({out_at:
 async function add(id){const it={tbl,dish_id:id,station:D.find(x=>x.id==id).station,qty:1,cid:cid()};const L=$('#olst');if(L){const sk=L.querySelector('.sk');if(sk)sk.remove();L.insertAdjacentHTML('afterbegin',`<div class="dh pend"><div>1× ${E(dn(id))} <small>⏳ ${T('отправляется')}</small></div></div>`)}
  try{const ev=window.event,el=ev&&ev.target&&ev.target.closest&&ev.target.closest('.dh');if(el){el.classList.remove('added');void el.offsetWidth;el.classList.add('added')}const ob=$('#obar'),n=$('#obn'),t=$('#obt');if(ob&&n){n.textContent=+n.textContent+1;if(t)t.textContent='…';ob.classList.remove('hid','bump');void ob.offsetWidth;ob.classList.add('bump')}}catch(e){}if(!navigator.onLine){QUE.push(it);ls.set('que',QUE);return render()}try{await addNow(it)}catch(e){if(!e.net)throw e;QUE.push(it);ls.set('que',QUE)}render()}
 let NOAR=0;
-async function addNow(it){const tbl=it.tbl;
+async function addNow(it,quiet){const tbl=it.tbl;
  if(!NOAR){let r;try{r=await sb.rpc('waiter_add',{p_tbl:tbl,p_dish:it.dish_id,p_station:it.station,p_cid:it.cid,p_qty:it.qty||1,p_note:it.note||null})}catch(e){e.net=1;throw e}
-  if(!r.error)return;const er=r.error;if(er.code=='PGRST202'||/Could not find the function|waiter_add/i.test(er.message||''))NOAR=1;else{if(NETERR(er)){er.net=1;throw er}alert(er.message);throw er}}
- let o=await q(sb.from('orders').select('id').eq('tbl',tbl).eq('status','open').maybeSingle());if(!o)o=await q(sb.from('orders').insert({tbl,kind:tbl>=100?'take':'dine'}).select().single());await insI({order_id:o.id,tbl,dish_id:it.dish_id,station:it.station,cid:it.cid})}
+  if(!r.error)return;const er=r.error;if(er.code=='PGRST202'||/Could not find the function|waiter_add/i.test(er.message||''))NOAR=1;else{if(NETERR(er)){er.net=1;throw er}if(!quiet)alert(er.message);throw er}}
+ const fo=()=>q(sb.from('orders').select('id').eq('tbl',tbl).eq('status','open').maybeSingle());let o=await fo();
+ if(!o){const r=await sb.from('orders').insert({tbl,kind:tbl>=200?'delivery':tbl>=100?'take':'dine'}).select().single();o=r.error?await fo():r.data;if(!o)throw r.error}
+ await insI({order_id:o.id,tbl,dish_id:it.dish_id,station:it.station,qty:it.qty||1,note:it.note||null,cid:it.cid})}
 const del=async id=>{await q(sb.from('order_items').delete().eq('id',id));render()};
 async function nt(id){const r=prompt(T('Комментарий для кухни (например: без лука)'),(IT.find(x=>x.id==id)||{}).note||'');if(r===null)return;await q(sb.from('order_items').update({note:r.trim()||null}).eq('id',id));render()}
 async function pay(m){if(!navigator.onLine||QUE.some(x=>x.tbl==tbl))return alert(T('Нет связи. Попробуйте, когда появится интернет'));const o=await q(sb.from('orders').select('id,service_pct,order_items(dish_id,qty,price)').eq('tbl',tbl).eq('status','open').single()),{sv,fee,tot}=sums(o.order_items,o);
@@ -418,9 +420,14 @@ else u[{cash:'p_cash',card:'p_card',kaspi:'p_kaspi'}[m]]=tot;
 if(!confirm(`${T('Закрыть стол')} ${tbl}? ${M(tot)}`))return;
 await q(sb.from('orders').update(u).eq('id',o.id));tbl=0;mix=0;render()}
 async function mvT(){const n=+prompt(T('На какой стол перенести? (1–9)'));if(!n||n==tbl||!HALL.some(h=>h[0]==n))return;
-const src=await q(sb.from('orders').select('id').eq('tbl',tbl).eq('status','open').single()),dst=await q(sb.from('orders').select('id').eq('tbl',n).eq('status','open').maybeSingle());
-if(dst){if(!confirm(`${T('Стол')} ${n} ${T('занят. Объединить заказы?')}`))return;await q(sb.from('order_items').update({order_id:dst.id,tbl:n}).eq('order_id',src.id));await q(sb.from('orders').delete().eq('id',src.id))}
-else{await q(sb.from('orders').update({tbl:n}).eq('id',src.id));await q(sb.from('order_items').update({tbl:n}).eq('order_id',src.id))}
+const dst=await q(sb.from('orders').select('id').eq('tbl',n).eq('status','open').maybeSingle());
+if(dst&&!confirm(`${T('Стол')} ${n} ${T('занят. Объединить заказы?')}`))return;
+const r=await sb.rpc('order_move',{p_from:tbl,p_to:n});
+if(r.error){if(!(r.error.code=='PGRST202'||/Could not find the function/i.test(r.error.message||'')))return alert(r.error.message);
+ /* база ещё не обновлена (49_fixes.sql) — старый способ */
+ const src=await q(sb.from('orders').select('id').eq('tbl',tbl).eq('status','open').single());
+ if(dst){await q(sb.from('order_items').update({order_id:dst.id,tbl:n}).eq('order_id',src.id));await q(sb.from('orders').delete().eq('id',src.id))}
+ else{await q(sb.from('orders').update({tbl:n}).eq('id',src.id));await q(sb.from('order_items').update({tbl:n}).eq('order_id',src.id))}}
 tbl=n;render()}
 
 /* ---- кухня / бар ---- */
@@ -852,7 +859,7 @@ async function inV(P){RCH=await q(sb.from('receipts').select('*').order('t',{asc
 async function sv(){const PA=await q(sb.from('products').select('*').order('name'));tab='st';PCH=PA.filter(p=>!p.archived);await Promise.all([loadPV(),astLoad(),loadD()]);return await whV(PA)}
 let MVL=0;
 async function mv(k){const id=$('#ip').value,n=+$('#iq').value;if(!(n>0))return;
- if(k=='in'){if(MVL)return;MVL=1;try{const c=+$('#ic').value||0,r=await q(sb.rpc('stock_receive',{p_id:+id,p_qty:n,p_price:c>0?c:null,p_note:null,p_to:$('#ito').value||null}));toast('✅ '+T('Принято')+': +'+n+' · '+T('остаток')+' '+(+(+r.balance).toFixed(3)))}finally{MVL=0}tab=me.role=='boss'?'wh':'st';WHM='in';return render()}
+ if(k=='in'){if(MVL)return;MVL=1;try{const c=+$('#ic').value||0,r=await q(sb.rpc('stock_receive',{p_id:+id,p_qty:n,p_price:c>0?c:null,p_note:null,p_to:$('#ito').value||null}));toast('✅ '+T('Принято')+': +'+n+' · '+T('остаток')+' '+(+(+r.balance).toFixed(3))+(r.in_price!=null&&+r.price!=+r.in_price?' · '+T('средняя цена')+' '+M(r.price):''))}finally{MVL=0}tab=me.role=='boss'?'wh':'st';WHM='in';return render()}
 const p=await q(sb.from('products').select('*').eq('id',id).single());let u,t;
 if(k=='in'){const c=+$('#ic').value;u={s_main:+p.s_main+n};if(c>0)u.price=c;t=`+${n} ${p.unit}`}else{const to=$('#ot').value;u={s_main:p.s_main-n,[to]:+p[to]+n};t=`${n} ${p.unit} → ${to=='s_bar'?'бар':'кухня'}`}
 await q(sb.from('products').update(u).eq('id',id));await q(sb.from('movements').insert({kind:k=='in'?'Приход':'Выдача',info:p.name+': '+t}));tab='st';render()}
@@ -946,7 +953,7 @@ function pcRH(){const n=+$('#pcq').value,c=+$('#pcc').value,o=PCD.o,b=$('#pcrh')
 function pcWH(){const n=+$('#pwq').value,b=$('#pcwh');if(b)b.innerHTML=n>0?`Сумма списания: <b>${M(n*(+PCD.o.price||0))}</b>`:''}
 async function pcReload(){const{data}=await sb.from('products').select('*').eq('id',PCD.id).single();if(data){const keep=pcDirty()?PCD.d:null;PCD.o={...data};PCD.d=keep?{...keep,s_kitchen:data.s_kitchen,s_bar:data.s_bar}:{...data};const i=PALL.findIndex(x=>x.id==data.id);if(i>=0)PALL[i]=data;const j=PCH.findIndex(x=>x.id==data.id);if(j>=0)PCH[j]=data}await pcHist()}
 async function pcIn(){if(PCD.busy)return;const n=+$('#pcq').value,c=+$('#pcc').value||0;if(!(n>0))return alert('Введите, сколько пришло');PCD.busy=1;
- try{const r=await q(sb.rpc('stock_receive',{p_id:PCD.id,p_qty:n,p_price:c>0?c:null,p_note:null,p_to:$('#pct').value||null}));toast('✅ Принято: +'+n+' '+PCD.o.unit+' · остаток '+n3(r&&r.balance!=null?r.balance:stk(PCD.o)+n));PCD.busy=0;await pcReload();await loadPV();PCD.tab='in';pcDraw();WDIRTY=1}catch(e){PCD.busy=0;alert(e.message||e)}}
+ try{const r=await q(sb.rpc('stock_receive',{p_id:PCD.id,p_qty:n,p_price:c>0?c:null,p_note:null,p_to:$('#pct').value||null}));toast('✅ Принято: +'+n+' '+PCD.o.unit+' · остаток '+n3(r&&r.balance!=null?r.balance:stk(PCD.o)+n)+(r&&r.in_price!=null&&+r.price!=+r.in_price?' · средняя цена '+M(r.price):''));PCD.busy=0;await pcReload();await loadPV();PCD.tab='in';pcDraw();WDIRTY=1}catch(e){PCD.busy=0;alert(e.message||e)}}
 async function pcWo(){if(PCD.busy)return;const n=+$('#pwq').value,l=$('#pwl').value,r=$('#pwr').value.trim(),o=PCD.o;if(!(n>0)||!r)return alert('Укажите количество и причину');
  if(!confirm(`Списать ${n} ${o.unit} «${o.name}» (${LOCN[l]}) — ${M(n*(o.price||0))}?\nПричина: ${r}`))return;PCD.busy=1;
  try{const{error}=await sb.rpc('stock_writeoff',{p_id:PCD.id,p_qty:n,p_loc:l,p_reason:r});if(error)throw error;toast('🗑 Списано: '+n+' '+o.unit);PCD.busy=0;await pcReload();PCD.tab='wo';pcDraw();WDIRTY=1}catch(e){PCD.busy=0;alert(e.message||e)}}
